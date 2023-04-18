@@ -27,7 +27,7 @@ object ServiceFunctions {
         new Figure(Presets.sceneWIDTH / 2, 0, Array(Array(x = true)), scalafx.scene.paint.Color.Black)
       case "simple figure" =>
         bonusFiguresQuantity.set(bonusFiguresQuantity.get() - 1)
-        if (bonusFiguresQuantity.toInt==0) Presets.bonusType="no bonus"
+        if (bonusFiguresQuantity.toInt == 0) Presets.bonusType = "no bonus"
         new Figure(Presets.sceneWIDTH / 2, 0, Array(Array(x = true)), scalafx.scene.paint.Color.Black)
     }
   }
@@ -46,9 +46,9 @@ object ServiceFunctions {
   }
 
   def showTheFigureOnTheScene(figure: Figure): Unit = {
-    try {
-      for (i <- figure.shapeFormingBooleanMatrix.indices) {
-        for (j <- figure.shapeFormingBooleanMatrix(i).indices) {
+    for (i <- figure.shapeFormingBooleanMatrix.indices) {
+      for (j <- figure.shapeFormingBooleanMatrix(i).indices) {
+        if (figure.shapeFormingBooleanMatrix(i).nonEmpty) {
           if (figure.shapeFormingBooleanMatrix(i)(j)) {
             val rectangle = new Rectangle()
             rectangle.setX((figure.horizontalPosition + j) * Presets.figureCellScale)
@@ -62,9 +62,6 @@ object ServiceFunctions {
           }
         }
       }
-    } catch {
-      case _: ArrayIndexOutOfBoundsException => println("O LA LA!")
-      case _: NullPointerException => println("U LO LO!")
     }
   }
 
@@ -148,7 +145,7 @@ object ServiceFunctions {
           println(s"SCORE : ${SCORE.get()}")
           BONUSSCORE.set(0)
           SCORE.set(0)
-          ServiceFunctions.resetGame()//GAME is OVER
+          ServiceFunctions.resetGame() //GAME is OVER
         }
         else if (Presets.canGetThruTheRow) {
           figure.moveFigureDown()
