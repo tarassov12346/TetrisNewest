@@ -1,33 +1,33 @@
-package service
+package com.evolution.tetris.service
 
 import javafx.scene.shape.Rectangle
 import scalafx.application.Platform
 import scalafx.scene.Group.sfxGroup2jfx
 import scalafx.scene.paint.Color
 import scalafx.scene.paint.Color.Red
-import service.Score.{BONUSSCORE, SCORE, bonusFiguresQuantity}
-import tetris.Figure
-import tetris.TetrisGame.{fallenFiguresList, figure, fxSceneProtagonists, tetrisSceneBooleanMatrix}
-
+import Score.{BONUSSCORE, SCORE, bonusFiguresQuantity}
+import com.evolution.tetris.game.Figure
+import com.evolution.tetris.game.TetrisGame.{fallenFiguresListBuffer, figure, fxSceneProtagonists, tetrisSceneBooleanMatrixArrayBuffer}
+import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
 
 object ServiceFunctions {
   def randomColor(): Color = scalafx.scene.paint.Color.rgb(Random.nextInt(255), Random.nextInt(255), Random.nextInt(255))
 
   def generateRandomOrBonusFigure(): Figure = {
-    Presets.bonusType match {
+    Presets.presetsArrayOfPauseFiguresChoiceBreakThruAbilityBonusType(3) match {
       case "no bonus" =>
         val figureShapeRandomPattern = Presets.presetFigureShapePatternsSequence(math.abs(Random.nextInt(Presets.presetFigureShapePatternsSequence.length)))
         new Figure(Presets.sceneWIDTH / 2, 0, figureShapeRandomPattern.toArray, ServiceFunctions.randomColor())
       //Check the previous 2 lines if smth goes wrong!!!!!!!!!!!!!!!!!!!!
       case "drop on one row down" =>
         bonusFiguresQuantity.set(bonusFiguresQuantity.get() - 1)
-        Presets.bonusType = "no bonus"
-        Presets.canGetThruTheRow = true
+        Presets.presetsArrayOfPauseFiguresChoiceBreakThruAbilityBonusType(3) = "no bonus"
+        Presets.presetsArrayOfPauseFiguresChoiceBreakThruAbilityBonusType(2) = "true"
         new Figure(Presets.sceneWIDTH / 2, 0, Array(Array(x = true)), scalafx.scene.paint.Color.Black)
       case "simple figure" =>
         bonusFiguresQuantity.set(bonusFiguresQuantity.get() - 1)
-        if (bonusFiguresQuantity.toInt == 0) Presets.bonusType = "no bonus"
+        if (bonusFiguresQuantity.toInt == 0) Presets.presetsArrayOfPauseFiguresChoiceBreakThruAbilityBonusType(3) = "no bonus"
         new Figure(Presets.sceneWIDTH / 2, 0, Array(Array(x = true)), scalafx.scene.paint.Color.Black)
     }
   }
@@ -35,12 +35,12 @@ object ServiceFunctions {
   def formResultingHardBottomOfTheSceneAddCurrentFigureToFallenFiguresListCallNextFigureAndAddToScore(): Unit = {
     for (i <- figure.shapeFormingBooleanMatrix.indices) {
       for (j <- figure.shapeFormingBooleanMatrix(0).indices) {
-        tetrisSceneBooleanMatrix(figure.verticalPosition + i)(figure.horizontalPosition + j) =
-          tetrisSceneBooleanMatrix(figure.verticalPosition + i)(figure.horizontalPosition + j) ||
+        tetrisSceneBooleanMatrixArrayBuffer(figure.verticalPosition + i)(figure.horizontalPosition + j) =
+          tetrisSceneBooleanMatrixArrayBuffer(figure.verticalPosition + i)(figure.horizontalPosition + j) ||
             figure.shapeFormingBooleanMatrix(i)(j)
       }
     }
-    fallenFiguresList = fallenFiguresList.appended(figure)
+    fallenFiguresListBuffer.addOne(figure)
     figure = ServiceFunctions.generateRandomOrBonusFigure()
     SCORE.set(SCORE.get() + 5)
   }
@@ -67,25 +67,24 @@ object ServiceFunctions {
 
   def analyzeTheAvailabilityOfBonusesAddToScoreIfTheRowIsFilledAndReduceTheFilledRow(): Unit = {
     for (i <- 0 until Presets.sceneHEIGHT) {
-      var isRowFilled = true
-      tetrisSceneBooleanMatrix(i).foreach(tetrisSceneBooleanMatrixRowCell => isRowFilled &&= tetrisSceneBooleanMatrixRowCell)
+      val isRowFilled = !tetrisSceneBooleanMatrixArrayBuffer(i).contains(false)
       if (isRowFilled) {
         BONUSSCORE.set(BONUSSCORE.get() + 1)
         if (BONUSSCORE.toInt % 2 == 0) {
-          Presets.bonusType = "simple figure"
+          Presets.presetsArrayOfPauseFiguresChoiceBreakThruAbilityBonusType(3) = "simple figure"
           bonusFiguresQuantity.set(BONUSSCORE.toInt / 5 + 1)
         }
         if (BONUSSCORE.toInt % 3 == 0) {
-          Presets.figuresChoice = true
+          Presets.presetsArrayOfPauseFiguresChoiceBreakThruAbilityBonusType(1) = "true"
         }
         if (BONUSSCORE.toInt % 5 == 0) {
-          Presets.bonusType = "drop on one row down"
+          Presets.presetsArrayOfPauseFiguresChoiceBreakThruAbilityBonusType(3) = "drop on one row down"
           bonusFiguresQuantity.set(1)
         }
         SCORE.set(SCORE.get() + 10)
-        tetrisSceneBooleanMatrix =
-          Array.fill(1, Presets.sceneWIDTH)(false).++(tetrisSceneBooleanMatrix.take(i)).++(tetrisSceneBooleanMatrix.drop(i + 1))
-        fallenFiguresList.foreach((figure: Figure) => {
+        tetrisSceneBooleanMatrixArrayBuffer.remove(i)
+        tetrisSceneBooleanMatrixArrayBuffer.prepend(ArrayBuffer.fill(Presets.sceneWIDTH)(false))
+        fallenFiguresListBuffer.foreach((figure: Figure) => {
           if (figure.verticalPosition <= i && figure.verticalPosition + figure.shapeFormingBooleanMatrix.length >= i) {
             figure.shapeFormingBooleanMatrix = figure.shapeFormingBooleanMatrix.take(i - figure.verticalPosition).++(figure.shapeFormingBooleanMatrix.drop(i - figure.verticalPosition + 1))
           }
@@ -102,7 +101,7 @@ object ServiceFunctions {
   def showFallenFiguresAndCurrentFigure(): Unit = {
     Platform.runLater(() -> {
       fxSceneProtagonists.getChildren.clear() //to clean up the traces from falling figures
-      fallenFiguresList.foreach(ServiceFunctions.showTheFigureOnTheScene)
+      fallenFiguresListBuffer.foreach(ServiceFunctions.showTheFigureOnTheScene)
       ServiceFunctions.showTheFigureOnTheScene(figure)
     })
   }
@@ -113,12 +112,13 @@ object ServiceFunctions {
   }
 
   def resetGame(): Unit = {
-    fallenFiguresList = List()
-    tetrisSceneBooleanMatrix = Array.fill[Boolean](Presets.sceneHEIGHT, Presets.sceneWIDTH)(false)
+    fallenFiguresListBuffer.clear()
+    tetrisSceneBooleanMatrixArrayBuffer.clear()
+    tetrisSceneBooleanMatrixArrayBuffer.addAll(ArrayBuffer.fill[Boolean](Presets.sceneHEIGHT, Presets.sceneWIDTH)(false))
     fxSceneProtagonists.getChildren.clear() //Apparently not needed
-    Presets.figuresChoice = false
-    Presets.canGetThruTheRow = false
-    Presets.bonusType = "no bonus"
+    Presets.presetsArrayOfPauseFiguresChoiceBreakThruAbilityBonusType(1) = "false"
+    Presets.presetsArrayOfPauseFiguresChoiceBreakThruAbilityBonusType(2) = "false"
+    Presets.presetsArrayOfPauseFiguresChoiceBreakThruAbilityBonusType(3) = "no bonus"
   }
 
   def canCurrentFigureGoDownCheckAndMoveTheFigureAtOnePositionDownIfTrue: Boolean = {
@@ -128,17 +128,16 @@ object ServiceFunctions {
       false
     }
     else {
-      var canTheFigureGoDown = true
+      val canTheFigureGoDownCheckListBuffer = scala.collection.mutable.ListBuffer[Boolean]()
       for (i <- figure.shapeFormingBooleanMatrix.indices) {
         for (j <- figure.shapeFormingBooleanMatrix(i).indices) {
-          if ((figure.horizontalPosition + j) >= Presets.sceneWIDTH ||
+          canTheFigureGoDownCheckListBuffer.addOne((figure.horizontalPosition + j) >= Presets.sceneWIDTH ||
             (figure.verticalPosition + 1 + i) >= Presets.sceneHEIGHT ||
             figure.shapeFormingBooleanMatrix(i)(j) &&
-              tetrisSceneBooleanMatrix(figure.verticalPosition + 1 + i)(figure.horizontalPosition + j)) {
-            canTheFigureGoDown = false
-          }
+              tetrisSceneBooleanMatrixArrayBuffer(figure.verticalPosition + 1 + i)(figure.horizontalPosition + j))
         }
       }
+      val canTheFigureGoDown = !canTheFigureGoDownCheckListBuffer.contains(true)
       if (canTheFigureGoDown) figure.moveFigureDown()
       else {
         if (figure.verticalPosition <= 0) {
@@ -147,9 +146,9 @@ object ServiceFunctions {
           SCORE.set(0)
           ServiceFunctions.resetGame() //GAME is OVER
         }
-        else if (Presets.canGetThruTheRow) {
+        else if (Presets.presetsArrayOfPauseFiguresChoiceBreakThruAbilityBonusType(2).toBoolean) {
           figure.moveFigureDown()
-          Presets.canGetThruTheRow = false
+          Presets.presetsArrayOfPauseFiguresChoiceBreakThruAbilityBonusType(2) = "false"
         }
         else {
           ServiceFunctions.formResultingHardBottomOfTheSceneAddCurrentFigureToFallenFiguresListCallNextFigureAndAddToScore()
@@ -161,41 +160,28 @@ object ServiceFunctions {
   }
 
   def canMoveTheFigureToLeft: Boolean = {
-    var willTheMoveBePossible = true
-    if (figure.horizontalPosition < 1) {
-      willTheMoveBePossible = false
-    }
-    else {
-      for (i <- figure.shapeFormingBooleanMatrix.indices) {
-        for (j <- figure.shapeFormingBooleanMatrix(i).indices) {
-          if ((figure.horizontalPosition - 1 + j) >= Presets.sceneWIDTH ||
-            (figure.verticalPosition + i) >= Presets.sceneHEIGHT ||
-            figure.shapeFormingBooleanMatrix(i)(j) && tetrisSceneBooleanMatrix(figure.verticalPosition + i)(figure.horizontalPosition - 1 + j)) {
-            willTheMoveBePossible = false
-          }
-        }
+    val willTheMoveBePossibleCheckListBuffer = scala.collection.mutable.ListBuffer[Boolean]()
+    for (i <- figure.shapeFormingBooleanMatrix.indices) {
+      for (j <- figure.shapeFormingBooleanMatrix(i).indices) {
+        willTheMoveBePossibleCheckListBuffer.addOne((figure.horizontalPosition < 1) || (figure.horizontalPosition - 1 + j) >= Presets.sceneWIDTH ||
+          (figure.verticalPosition + i) >= Presets.sceneHEIGHT ||
+          figure.shapeFormingBooleanMatrix(i)(j) && tetrisSceneBooleanMatrixArrayBuffer(figure.verticalPosition + i)(figure.horizontalPosition - 1 + j))
       }
     }
-    willTheMoveBePossible
+    !willTheMoveBePossibleCheckListBuffer.contains(true)
   }
 
   def canMoveTheFigureToRight: Boolean = {
-    var willTheMoveBePossible = true
-    if (figure.horizontalPosition + figure.shapeFormingBooleanMatrix(0).length >= Presets.sceneWIDTH) {
-      willTheMoveBePossible = false
-    }
-    else {
-      for (i <- figure.shapeFormingBooleanMatrix.indices) {
-        for (j <- figure.shapeFormingBooleanMatrix(i).indices) {
-          if ((figure.horizontalPosition + 1 + j) >= Presets.sceneWIDTH ||
-            (figure.verticalPosition + i) >= Presets.sceneHEIGHT ||
-            figure.shapeFormingBooleanMatrix(i)(j) && tetrisSceneBooleanMatrix(figure.verticalPosition + i)(figure.horizontalPosition + 1 + j)) {
-            willTheMoveBePossible = false
-          }
-        }
+    val willTheMoveBePossibleCheckListBuffer = scala.collection.mutable.ListBuffer[Boolean]()
+    for (i <- figure.shapeFormingBooleanMatrix.indices) {
+      for (j <- figure.shapeFormingBooleanMatrix(i).indices) {
+        willTheMoveBePossibleCheckListBuffer.addOne((figure.horizontalPosition + figure.shapeFormingBooleanMatrix(0).length >= Presets.sceneWIDTH) ||
+          (figure.horizontalPosition + 1 + j) >= Presets.sceneWIDTH ||
+          (figure.verticalPosition + i) >= Presets.sceneHEIGHT ||
+          figure.shapeFormingBooleanMatrix(i)(j) && tetrisSceneBooleanMatrixArrayBuffer(figure.verticalPosition + i)(figure.horizontalPosition + 1 + j))
       }
     }
-    willTheMoveBePossible
+    !willTheMoveBePossibleCheckListBuffer.contains(true)
   }
 
   def canRotateTheFigure(isClockWise: Boolean): Boolean = {
@@ -206,16 +192,14 @@ object ServiceFunctions {
     else {
       figureSupposedToBeRotated.rotateFigureAntiClockwise()
     }
-    var willRotationBePossible = true
+    val willTheMoveBePossibleCheckListBuffer = scala.collection.mutable.ListBuffer[Boolean]()
     for (i <- figureSupposedToBeRotated.shapeFormingBooleanMatrix.indices) {
       for (j <- figureSupposedToBeRotated.shapeFormingBooleanMatrix(i).indices) {
-        if ((figure.horizontalPosition + j) >= Presets.sceneWIDTH ||
+        willTheMoveBePossibleCheckListBuffer.addOne((figure.horizontalPosition + j) >= Presets.sceneWIDTH ||
           (figure.verticalPosition + i) >= Presets.sceneHEIGHT ||
-          figureSupposedToBeRotated.shapeFormingBooleanMatrix(i)(j) && tetrisSceneBooleanMatrix(figure.verticalPosition + i)(figure.horizontalPosition + j)) {
-          willRotationBePossible = false
-        }
+          figureSupposedToBeRotated.shapeFormingBooleanMatrix(i)(j) && tetrisSceneBooleanMatrixArrayBuffer(figure.verticalPosition + i)(figure.horizontalPosition + j))
       }
     }
-    willRotationBePossible
+    !willTheMoveBePossibleCheckListBuffer.contains(true)
   }
 }

@@ -1,20 +1,20 @@
-package tetris
+package com.evolution.tetris.game
 
-import game.Game
 import scalafx.application.JFXApp3
 import scalafx.concurrent.{ScheduledService, Task}
 import scalafx.scene.Group.sfxGroup2jfx
 import scalafx.scene.input.KeyCode
 import scalafx.scene.paint.Color
 import scalafx.scene.{Group, Scene}
-import service.{Presets, ServiceFunctions}
-import service.Score.{SCORE, score}
+import com.evolution.tetris.service.Score.{SCORE, score}
+import com.evolution.tetris.service.{Presets, ServiceFunctions}
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
-object TetrisGame extends Game {
+object TetrisGame extends JFXApp3 {
 
-  var fallenFiguresList: List[Figure] = List()
-  var tetrisSceneBooleanMatrix: Array[Array[Boolean]] = Array.fill[Boolean](Presets.sceneHEIGHT, Presets.sceneWIDTH)(false)
-  var fxSceneProtagonists = new Group()
+  val fallenFiguresListBuffer = ListBuffer[Figure]()
+  val tetrisSceneBooleanMatrixArrayBuffer: ArrayBuffer[ArrayBuffer[Boolean]] = ArrayBuffer.fill[Boolean](Presets.sceneHEIGHT, Presets.sceneWIDTH)(false)
+  val fxSceneProtagonists = new Group()
 
   SCORE.set(0)
   var figure: Figure = ServiceFunctions.generateRandomOrBonusFigure()
@@ -44,11 +44,12 @@ object TetrisGame extends Game {
               ServiceFunctions.showFallenFiguresAndCurrentFigure()
             case KeyCode.Alt.delegate => if (ServiceFunctions.canRotateTheFigure(false)) figure.rotateFigureAntiClockwise()
               ServiceFunctions.showFallenFiguresAndCurrentFigure()
-            case KeyCode.Down.delegate => if (!Presets.pause) ServiceFunctions.makeFigureGoDownQuick()
+            case KeyCode.Down.delegate => if (!Presets.presetsArrayOfPauseFiguresChoiceBreakThruAbilityBonusType(0).toBoolean) ServiceFunctions.makeFigureGoDownQuick()
               ServiceFunctions.showFallenFiguresAndCurrentFigure()
-            case KeyCode.P.delegate => Presets.pause = !Presets.pause
-            case KeyCode.C.delegate => if (Presets.figuresChoice) figure = ServiceFunctions.generateRandomOrBonusFigure()
-              Presets.figuresChoice = false
+            case KeyCode.P.delegate => Presets.presetsArrayOfPauseFiguresChoiceBreakThruAbilityBonusType(0) = (!Presets.presetsArrayOfPauseFiguresChoiceBreakThruAbilityBonusType(0).toBoolean).toString
+              //Presets.pause = !Presets.pause
+            case KeyCode.C.delegate => if (Presets.presetsArrayOfPauseFiguresChoiceBreakThruAbilityBonusType(1).toBoolean) figure = ServiceFunctions.generateRandomOrBonusFigure()
+              Presets.presetsArrayOfPauseFiguresChoiceBreakThruAbilityBonusType(1) = "false"
             case _ => println("Use Left,Right,Space,Alt,Down keys!")
           }
         }
