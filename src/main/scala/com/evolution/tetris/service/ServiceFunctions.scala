@@ -21,7 +21,7 @@ final class ServiceFunctions {
   val fallenFiguresListBuffer = ListBuffer[Figure]()
   val fxSceneProtagonists = new Group()
   val currentFigureContainingArrayBuffer: ArrayBuffer[Figure] = ArrayBuffer.fill[Figure](1)(generateRandomOrBonusFigure())
-  val figureSupposedToBeRotatedArrayBuffer = ArrayBuffer[Figure](new Figure(currentFigureContainingArrayBuffer(0).horizontalPosition, currentFigureContainingArrayBuffer(0).verticalPosition, currentFigureContainingArrayBuffer(0).shapeFormingBooleanMatrix.clone(), currentFigureContainingArrayBuffer(0).color,presetsObject))
+  val figureSupposedToBeRotatedArrayBuffer = ArrayBuffer[Figure](Figure(currentFigureContainingArrayBuffer(0).horizontalPosition, currentFigureContainingArrayBuffer(0).verticalPosition, currentFigureContainingArrayBuffer(0).shapeFormingBooleanMatrix.clone(), currentFigureContainingArrayBuffer(0).color, presetsObject))
 
 
   def randomColor(): Color = scalafx.scene.paint.Color.rgb(Random.nextInt(255), Random.nextInt(255), Random.nextInt(255))
@@ -30,17 +30,17 @@ final class ServiceFunctions {
     presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(3) match {
       case "no bonus" =>
         val figureShapeRandomPattern = presetsObject.presetFigureShapePatternsSequence(math.abs(Random.nextInt(presetsObject.presetFigureShapePatternsSequence.length)))
-        new Figure(presetsObject.sceneWidth / 2, 0, figureShapeRandomPattern.toArray, randomColor(),presetsObject)
+        Figure(presetsObject.sceneWidth / 2, 0, figureShapeRandomPattern.toArray, randomColor(), presetsObject)
       //Check the previous 2 lines if smth goes wrong!!!!!!!!!!!!!!!!!!!!
       case "drop on one row down" =>
         scoreObject.bonusFiguresQuantity.set(scoreObject.bonusFiguresQuantity.get() - 1)
         presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(3) = "no bonus"
         presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(2) = "true"
-        new Figure(presetsObject.sceneWidth / 2, 0, Array(Array(x = true)), scalafx.scene.paint.Color.DarkGoldenrod,presetsObject)
+        Figure(presetsObject.sceneWidth / 2, 0, Array(Array(x = true)), scalafx.scene.paint.Color.DarkGoldenrod, presetsObject)
       case "simple figure" =>
         scoreObject.bonusFiguresQuantity.set(scoreObject.bonusFiguresQuantity.get() - 1)
         if (scoreObject.bonusFiguresQuantity.toInt == 0) presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(3) = "no bonus"
-        new Figure(presetsObject.sceneWidth / 2, 0, Array(Array(x = true)), scalafx.scene.paint.Color.Black,presetsObject)
+        Figure(presetsObject.sceneWidth / 2, 0, Array(Array(x = true)), scalafx.scene.paint.Color.Black, presetsObject)
     }
   }
 
@@ -99,16 +99,16 @@ final class ServiceFunctions {
 
         fallenFiguresListBuffer.mapInPlace(fallenFigure => {
           if (fallenFigure.verticalPosition <= i && fallenFigure.verticalPosition + fallenFigure.shapeFormingBooleanMatrix.length >= i)
-            new Figure(fallenFigure.horizontalPosition,fallenFigure.verticalPosition,
+            Figure(fallenFigure.horizontalPosition, fallenFigure.verticalPosition,
               fallenFigure.shapeFormingBooleanMatrix.take(i - fallenFigure.verticalPosition).++(fallenFigure.shapeFormingBooleanMatrix.drop(i - fallenFigure.verticalPosition + 1)),
-              fallenFigure.color,presetsObject)
+              fallenFigure.color, presetsObject)
               else fallenFigure
         })
 
         fallenFiguresListBuffer.mapInPlace(fallenFigure => {
           if (fallenFigure.verticalPosition <=i) {
-            new Figure(fallenFigure.horizontalPosition,fallenFigure.verticalPosition+1,
-              fallenFigure.shapeFormingBooleanMatrix,fallenFigure.color,presetsObject)
+            Figure(fallenFigure.horizontalPosition, fallenFigure.verticalPosition + 1,
+              fallenFigure.shapeFormingBooleanMatrix, fallenFigure.color, presetsObject)
           } else fallenFigure
         })
 
