@@ -3,10 +3,10 @@ package com.evolution.tetris.service
 import scala.collection.mutable.ListBuffer
 import scala.io.Source
 
-object Presets {
-  val sceneWIDTH = 16
-  val sceneHEIGHT = 12
-  val presetsArrayOfPauseFiguresChoiceBreakThruAbilityBonusType = Array("false","false","false","no bonus")
+final class Presets {
+  val sceneWidth = 16
+  val sceneHeight = 12
+  val presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType = Array("false","false","false","no bonus")
 
   def figureCellScale = 30
 

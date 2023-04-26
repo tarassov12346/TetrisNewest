@@ -2,22 +2,28 @@ package com.evolution.tetris.game
 
 import com.evolution.tetris.service.Presets
 
-class Figure(var horizontalPosition:Int, var verticalPosition:Int = 0,
-             var shapeFormingBooleanMatrix: Array[Array[Boolean]], val color:scalafx.scene.paint.Color) {
+final case class Figure(val horizontalPosition:Int, val verticalPosition:Int = 0,
+             val shapeFormingBooleanMatrix: Array[Array[Boolean]], val color:scalafx.scene.paint.Color,
+             presetsObject: Presets) {
 
-  def rotateFigureClockwise(): (Unit, Unit) =()->{
-    this.shapeFormingBooleanMatrix = shapeFormingBooleanMatrix.reverse.transpose[Boolean]
+  def rotateFigureClockwise(): Figure =
+    new Figure(horizontalPosition, verticalPosition, shapeFormingBooleanMatrix.reverse.transpose[Boolean], color,
+      presetsObject)
+
+  def rotateFigureAntiClockwise(): Figure = {
+    rotateFigureClockwise()
+    rotateFigureClockwise()
+    rotateFigureClockwise()
   }
 
-  def rotateFigureAntiClockwise(): (Unit, (Unit, Unit)) =()->{
-    this.rotateFigureClockwise()
-    this.rotateFigureClockwise()
-    this.rotateFigureClockwise()
-  }
+  def moveFigureToRight(): Figure =
+    new Figure(horizontalPosition+1,verticalPosition,shapeFormingBooleanMatrix,color,presetsObject)
 
-  def moveFigureToRight(): Unit =  horizontalPosition+=1
+  def moveFigureToLeft(): Figure =
+    new Figure(horizontalPosition-1,verticalPosition,shapeFormingBooleanMatrix,color,presetsObject)
 
-  def moveFigureToLeft(): Unit =  horizontalPosition-=1
-
-  def moveFigureDown(): Unit = if (!Presets.presetsArrayOfPauseFiguresChoiceBreakThruAbilityBonusType(0).toBoolean) verticalPosition+=1
+  def moveFigureDown(): Figure =
+    if (!presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(0).toBoolean)
+      new Figure(horizontalPosition,verticalPosition+1,shapeFormingBooleanMatrix,color,presetsObject)
+    else this
 }
