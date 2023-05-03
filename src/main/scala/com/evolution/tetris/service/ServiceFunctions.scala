@@ -11,7 +11,10 @@ import scalafx.scene.paint.Color.Red
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.util.Random
 
-final class ServiceFunctions {
+import com.evolution.tetris.db.DataBase
+
+
+final case class ServiceFunctions(playerName: String) {
 
 
   val presetsObject = new Presets()
@@ -23,6 +26,7 @@ final class ServiceFunctions {
   val currentFigureContainingArrayBuffer: ArrayBuffer[Figure] = ArrayBuffer.fill[Figure](1)(generateRandomOrBonusFigure())
   val figureSupposedToBeRotatedArrayBuffer = ArrayBuffer[Figure](Figure(currentFigureContainingArrayBuffer(0).horizontalPosition, currentFigureContainingArrayBuffer(0).verticalPosition, currentFigureContainingArrayBuffer(0).shapeFormingBooleanMatrix.clone(), currentFigureContainingArrayBuffer(0).color, presetsObject))
 
+  val db = new DataBase
 
   def randomColor(): Color = scalafx.scene.paint.Color.rgb(Random.nextInt(255), Random.nextInt(255), Random.nextInt(255))
 
@@ -102,11 +106,11 @@ final class ServiceFunctions {
             Figure(fallenFigure.horizontalPosition, fallenFigure.verticalPosition,
               fallenFigure.shapeFormingBooleanMatrix.take(i - fallenFigure.verticalPosition).++(fallenFigure.shapeFormingBooleanMatrix.drop(i - fallenFigure.verticalPosition + 1)),
               fallenFigure.color, presetsObject)
-              else fallenFigure
+          else fallenFigure
         })
 
         fallenFiguresListBuffer.mapInPlace(fallenFigure => {
-          if (fallenFigure.verticalPosition <=i) {
+          if (fallenFigure.verticalPosition <= i) {
             Figure(fallenFigure.horizontalPosition, fallenFigure.verticalPosition + 1,
               fallenFigure.shapeFormingBooleanMatrix, fallenFigure.color, presetsObject)
           } else fallenFigure
@@ -131,7 +135,10 @@ final class ServiceFunctions {
     }
   }
 
-  def resetGame(): Unit = {
+  def resetGame(score: Int): Unit = {
+    db.Player(playerName, score).savePlayerScore()
+    db.collectAllPlayersToListAndSortByScore.sortWith((x, y) => x.score > y.score).foreach(player => println(player))
+
     fallenFiguresListBuffer.clear()
     tetrisSceneBooleanMatrixArrayBuffer.clear()
     tetrisSceneBooleanMatrixArrayBuffer.addAll(ArrayBuffer.fill[Boolean](presetsObject.sceneHeight, presetsObject.sceneWidth)(false))
@@ -160,14 +167,15 @@ final class ServiceFunctions {
       val canTheFigureGoDown = !canTheFigureGoDownCheckListBuffer.contains(true)
 
       if (canTheFigureGoDown) {
-        currentFigureContainingArrayBuffer(0)= currentFigureContainingArrayBuffer(0).moveFigureDown()
+        currentFigureContainingArrayBuffer(0) = currentFigureContainingArrayBuffer(0).moveFigureDown()
       }
       else {
         if (currentFigureContainingArrayBuffer(0).verticalPosition <= 0) {
           println(s"SCORE : ${scoreObject.score.get()}")
+          val score = scoreObject.score.value
           scoreObject.bonusScore.set(0)
           scoreObject.score.set(0)
-          resetGame() //GAME is OVER
+          resetGame(score) //GAME is OVER
         }
         else if (presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(2).toBoolean) {
           currentFigureContainingArrayBuffer(0) = currentFigureContainingArrayBuffer(0).moveFigureDown()

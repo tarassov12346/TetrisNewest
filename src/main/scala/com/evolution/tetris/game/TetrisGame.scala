@@ -8,9 +8,9 @@ import scalafx.scene.input.KeyCode
 import scalafx.scene.paint.Color
 import scalafx.scene.{Group, Scene}
 
-final class TetrisGame extends JFXApp3 {
+final case class TetrisGame(playerName: String) extends JFXApp3 {
 
-  val service = new ServiceFunctions()
+  val service = new ServiceFunctions(playerName)
 
 
   override def start(): Unit = {
