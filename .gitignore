@@ -5,6 +5,7 @@ out/
 .idea/
 .bsp/
 target/
+.project/target/
 *.yml
 *.iml
 *.md
