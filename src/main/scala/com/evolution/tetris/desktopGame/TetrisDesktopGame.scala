@@ -10,8 +10,8 @@ import scalafx.scene.{Group, Scene}
 
 final case class TetrisDesktopGame(playerName: String) extends JFXApp3 {
 
-  val view = new DesktopView()
-  val service = new ServiceFunctions(playerName, view)
+  val view = new DesktopView(playerName)
+  val service: ServiceFunctions = view.serviceFunctions
 
   override def start(): Unit = {
     stage = new JFXApp3.PrimaryStage {

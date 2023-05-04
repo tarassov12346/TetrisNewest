@@ -1,37 +1,37 @@
 package com.evolution.tetris.service
 
 import com.evolution.tetris.db.DataBase
-import com.evolution.tetris.desktopGame.DesktopView
-
+import com.evolution.tetris.service
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.util.Random
 
-
-final case class ServiceFunctions(playerName: String, view: DesktopView) {
+final case class ServiceFunctions(playerName: String) {
   val presetsObject = new Presets()
   val tetrisSceneBooleanMatrixArrayBuffer: ArrayBuffer[ArrayBuffer[Boolean]] =
     ArrayBuffer.fill[Boolean](presetsObject.sceneHeight, presetsObject.sceneWidth)(false)
   val fallenFiguresListBuffer = ListBuffer[Figure]()
   val currentFigureContainingArrayBuffer: ArrayBuffer[Figure] = ArrayBuffer.fill[Figure](1)(generateRandomOrBonusFigure())
   val figureSupposedToBeRotatedArrayBuffer =
-    ArrayBuffer[Figure](Figure(currentFigureContainingArrayBuffer(0).horizontalPosition, currentFigureContainingArrayBuffer(0).verticalPosition, currentFigureContainingArrayBuffer(0).shapeFormingBooleanMatrix.clone(), currentFigureContainingArrayBuffer(0).color, presetsObject))
+    ArrayBuffer[Figure](service.Figure(currentFigureContainingArrayBuffer(0).horizontalPosition, currentFigureContainingArrayBuffer(0).verticalPosition, currentFigureContainingArrayBuffer(0).shapeFormingBooleanMatrix.clone(), currentFigureContainingArrayBuffer(0).colorChoiceCode, presetsObject))
   val db = new DataBase
+  val scoreArrayOfScoreAndBonusScoreAndBonusFigureQuantity: Array[Int] =Array(0,0,0)
 
   def generateRandomOrBonusFigure(): Figure = {
     presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(3) match {
       case "no bonus" =>
         val figureShapeRandomPattern = presetsObject.presetFigureShapePatternsSequence(math.abs(Random.nextInt(presetsObject.presetFigureShapePatternsSequence.length)))
-        Figure(presetsObject.sceneWidth / 2, 0, figureShapeRandomPattern.toArray, view.randomColor(), presetsObject)
+        service.Figure(presetsObject.sceneWidth / 2, 0, figureShapeRandomPattern.toArray, scala.util.Random.nextInt(9), presetsObject)
       //Check the previous 2 lines if smth goes wrong!!!!!!!!!!!!!!!!!!!!
       case "drop on one row down" =>
-        view.bonusFiguresQuantity.set(view.bonusFiguresQuantity.get() - 1)
+       // view.bonusFiguresQuantity.set(view.bonusFiguresQuantity.get() - 1)
+        scoreArrayOfScoreAndBonusScoreAndBonusFigureQuantity(2)-=1
         presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(3) = "no bonus"
         presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(2) = "true"
-        Figure(presetsObject.sceneWidth / 2, 0, Array(Array(x = true)), scalafx.scene.paint.Color.DarkGoldenrod, presetsObject)
+        service.Figure(presetsObject.sceneWidth / 2, 0, Array(Array(x = true)), 12, presetsObject)
       case "simple figure" =>
-        view.bonusFiguresQuantity.set(view.bonusFiguresQuantity.get() - 1)
-        if (view.bonusFiguresQuantity.toInt == 0) presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(3) = "no bonus"
-        Figure(presetsObject.sceneWidth / 2, 0, Array(Array(x = true)), scalafx.scene.paint.Color.Black, presetsObject)
+        scoreArrayOfScoreAndBonusScoreAndBonusFigureQuantity(2)-=1
+        if (scoreArrayOfScoreAndBonusScoreAndBonusFigureQuantity(2) == 0) presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(3) = "no bonus"
+        service.Figure(presetsObject.sceneWidth / 2, 0, Array(Array(x = true)), 13, presetsObject)
     }
   }
 
@@ -45,41 +45,42 @@ final case class ServiceFunctions(playerName: String, view: DesktopView) {
     }
     fallenFiguresListBuffer.addOne(currentFigureContainingArrayBuffer(0))
     currentFigureContainingArrayBuffer(0) = generateRandomOrBonusFigure()
-    view.score.set(view.score.get() + 5)
+    scoreArrayOfScoreAndBonusScoreAndBonusFigureQuantity(0)+=5
   }
 
   def analyzeTheAvailabilityOfBonusesAddToScoreIfTheRowIsFilledAndReduceTheFilledRow(): Unit = {
     for (i <- 0 until presetsObject.sceneHeight) {
       val isRowFilled = !tetrisSceneBooleanMatrixArrayBuffer(i).contains(false)
       if (isRowFilled) {
-        view.bonusScore.set(view.bonusScore.get() + 1)
-        if (view.bonusScore.toInt % 2 == 0) {
+        scoreArrayOfScoreAndBonusScoreAndBonusFigureQuantity(1)+=1
+        if (scoreArrayOfScoreAndBonusScoreAndBonusFigureQuantity(1) % 2 == 0) {
           presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(3) = "simple figure"
-          view.bonusFiguresQuantity.set(view.bonusScore.toInt / 5 + 1)
+          scoreArrayOfScoreAndBonusScoreAndBonusFigureQuantity(2)=
+            scoreArrayOfScoreAndBonusScoreAndBonusFigureQuantity(1)/5 +1
         }
-        if (view.bonusScore.toInt % 3 == 0) {
+        if (scoreArrayOfScoreAndBonusScoreAndBonusFigureQuantity(1) % 3 == 0) {
           presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(1) = "true"
         }
-        if (view.bonusScore.toInt % 5 == 0) {
+        if (scoreArrayOfScoreAndBonusScoreAndBonusFigureQuantity(1) % 5 == 0) {
           presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(3) = "drop on one row down"
-          view.bonusFiguresQuantity.set(1)
+          scoreArrayOfScoreAndBonusScoreAndBonusFigureQuantity(2)=1
         }
-        view.score.set(view.score.get() + 10)
+        scoreArrayOfScoreAndBonusScoreAndBonusFigureQuantity(0)+=10
         tetrisSceneBooleanMatrixArrayBuffer.remove(i)
         tetrisSceneBooleanMatrixArrayBuffer.prepend(ArrayBuffer.fill(presetsObject.sceneWidth)(false))
 
         fallenFiguresListBuffer.mapInPlace(fallenFigure => {
           if (fallenFigure.verticalPosition <= i && fallenFigure.verticalPosition + fallenFigure.shapeFormingBooleanMatrix.length >= i)
-            Figure(fallenFigure.horizontalPosition, fallenFigure.verticalPosition,
+            service.Figure(fallenFigure.horizontalPosition, fallenFigure.verticalPosition,
               fallenFigure.shapeFormingBooleanMatrix.take(i - fallenFigure.verticalPosition).++(fallenFigure.shapeFormingBooleanMatrix.drop(i - fallenFigure.verticalPosition + 1)),
-              fallenFigure.color, presetsObject)
+              fallenFigure.colorChoiceCode, presetsObject)
           else fallenFigure
         })
 
         fallenFiguresListBuffer.mapInPlace(fallenFigure => {
           if (fallenFigure.verticalPosition <= i) {
-            Figure(fallenFigure.horizontalPosition, fallenFigure.verticalPosition + 1,
-              fallenFigure.shapeFormingBooleanMatrix, fallenFigure.color, presetsObject)
+            service.Figure(fallenFigure.horizontalPosition, fallenFigure.verticalPosition + 1,
+              fallenFigure.shapeFormingBooleanMatrix, fallenFigure.colorChoiceCode, presetsObject)
           } else fallenFigure
         })
       }
@@ -125,10 +126,10 @@ final case class ServiceFunctions(playerName: String, view: DesktopView) {
       }
       else {
         if (currentFigureContainingArrayBuffer(0).verticalPosition <= 0) {
-          println(s"SCORE : ${view.score.get()}")
-          val score = view.score.value
-          view.bonusScore.set(0)
-          view.score.set(0)
+          println(s"SCORE : ${scoreArrayOfScoreAndBonusScoreAndBonusFigureQuantity(0)}")
+          val score = scoreArrayOfScoreAndBonusScoreAndBonusFigureQuantity(0)
+          scoreArrayOfScoreAndBonusScoreAndBonusFigureQuantity(1)=0
+          scoreArrayOfScoreAndBonusScoreAndBonusFigureQuantity(0)=0
           resetGame(score) //GAME is OVER
         }
         else if (presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(2).toBoolean) {
