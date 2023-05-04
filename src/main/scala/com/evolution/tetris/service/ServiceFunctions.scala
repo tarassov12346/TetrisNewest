@@ -23,7 +23,6 @@ final case class ServiceFunctions(playerName: String) {
         service.Figure(presetsObject.sceneWidth / 2, 0, figureShapeRandomPattern.toArray, scala.util.Random.nextInt(9), presetsObject)
       //Check the previous 2 lines if smth goes wrong!!!!!!!!!!!!!!!!!!!!
       case "drop on one row down" =>
-       // view.bonusFiguresQuantity.set(view.bonusFiguresQuantity.get() - 1)
         scoreArrayOfScoreAndBonusScoreAndBonusFigureQuantity(2)-=1
         presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(3) = "no bonus"
         presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(2) = "true"
