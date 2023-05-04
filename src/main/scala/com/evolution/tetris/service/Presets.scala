@@ -6,7 +6,7 @@ import scala.io.Source
 final class Presets {
   val sceneWidth = 16
   val sceneHeight = 12
-  val presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType = Array("false","false","false","no bonus")
+  val presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType = Array("false", "false", "false", "no bonus")
 
   def figureCellScale = 30
 

@@ -1,14 +1,14 @@
 package com.evolution.tetris.service
 
-import scala.collection.mutable.{ArrayBuffer, ListBuffer}
-import scala.util.Random
 import com.evolution.tetris.db.DataBase
 import com.evolution.tetris.desktopGame.DesktopView
 
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
+import scala.util.Random
 
-final case class ServiceFunctions(playerName: String,view:DesktopView) {
+
+final case class ServiceFunctions(playerName: String, view: DesktopView) {
   val presetsObject = new Presets()
-  val scoreObject = new Score(presetsObject)
   val tetrisSceneBooleanMatrixArrayBuffer: ArrayBuffer[ArrayBuffer[Boolean]] =
     ArrayBuffer.fill[Boolean](presetsObject.sceneHeight, presetsObject.sceneWidth)(false)
   val fallenFiguresListBuffer = ListBuffer[Figure]()
@@ -24,13 +24,13 @@ final case class ServiceFunctions(playerName: String,view:DesktopView) {
         Figure(presetsObject.sceneWidth / 2, 0, figureShapeRandomPattern.toArray, view.randomColor(), presetsObject)
       //Check the previous 2 lines if smth goes wrong!!!!!!!!!!!!!!!!!!!!
       case "drop on one row down" =>
-        scoreObject.bonusFiguresQuantity.set(scoreObject.bonusFiguresQuantity.get() - 1)
+        view.bonusFiguresQuantity.set(view.bonusFiguresQuantity.get() - 1)
         presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(3) = "no bonus"
         presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(2) = "true"
         Figure(presetsObject.sceneWidth / 2, 0, Array(Array(x = true)), scalafx.scene.paint.Color.DarkGoldenrod, presetsObject)
       case "simple figure" =>
-        scoreObject.bonusFiguresQuantity.set(scoreObject.bonusFiguresQuantity.get() - 1)
-        if (scoreObject.bonusFiguresQuantity.toInt == 0) presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(3) = "no bonus"
+        view.bonusFiguresQuantity.set(view.bonusFiguresQuantity.get() - 1)
+        if (view.bonusFiguresQuantity.toInt == 0) presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(3) = "no bonus"
         Figure(presetsObject.sceneWidth / 2, 0, Array(Array(x = true)), scalafx.scene.paint.Color.Black, presetsObject)
     }
   }
@@ -45,26 +45,26 @@ final case class ServiceFunctions(playerName: String,view:DesktopView) {
     }
     fallenFiguresListBuffer.addOne(currentFigureContainingArrayBuffer(0))
     currentFigureContainingArrayBuffer(0) = generateRandomOrBonusFigure()
-    scoreObject.score.set(scoreObject.score.get() + 5)
+    view.score.set(view.score.get() + 5)
   }
 
   def analyzeTheAvailabilityOfBonusesAddToScoreIfTheRowIsFilledAndReduceTheFilledRow(): Unit = {
     for (i <- 0 until presetsObject.sceneHeight) {
       val isRowFilled = !tetrisSceneBooleanMatrixArrayBuffer(i).contains(false)
       if (isRowFilled) {
-        scoreObject.bonusScore.set(scoreObject.bonusScore.get() + 1)
-        if (scoreObject.bonusScore.toInt % 2 == 0) {
+        view.bonusScore.set(view.bonusScore.get() + 1)
+        if (view.bonusScore.toInt % 2 == 0) {
           presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(3) = "simple figure"
-          scoreObject.bonusFiguresQuantity.set(scoreObject.bonusScore.toInt / 5 + 1)
+          view.bonusFiguresQuantity.set(view.bonusScore.toInt / 5 + 1)
         }
-        if (scoreObject.bonusScore.toInt % 3 == 0) {
+        if (view.bonusScore.toInt % 3 == 0) {
           presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(1) = "true"
         }
-        if (scoreObject.bonusScore.toInt % 5 == 0) {
+        if (view.bonusScore.toInt % 5 == 0) {
           presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(3) = "drop on one row down"
-          scoreObject.bonusFiguresQuantity.set(1)
+          view.bonusFiguresQuantity.set(1)
         }
-        scoreObject.score.set(scoreObject.score.get() + 10)
+        view.score.set(view.score.get() + 10)
         tetrisSceneBooleanMatrixArrayBuffer.remove(i)
         tetrisSceneBooleanMatrixArrayBuffer.prepend(ArrayBuffer.fill(presetsObject.sceneWidth)(false))
 
@@ -85,11 +85,6 @@ final case class ServiceFunctions(playerName: String,view:DesktopView) {
       }
     }
   }
-
-
-
- // def showTheScene(): Unit = view.showFallenFiguresAndCurrentFigure(fallenFiguresListBuffer,currentFigureContainingArrayBuffer)
-
 
   def makeFigureGoDownQuick(): Unit = {
     while (canCurrentFigureGoDownCheckAndMoveTheFigureAtOnePositionDownIfTrue) {
@@ -130,10 +125,10 @@ final case class ServiceFunctions(playerName: String,view:DesktopView) {
       }
       else {
         if (currentFigureContainingArrayBuffer(0).verticalPosition <= 0) {
-          println(s"SCORE : ${scoreObject.score.get()}")
-          val score = scoreObject.score.value
-          scoreObject.bonusScore.set(0)
-          scoreObject.score.set(0)
+          println(s"SCORE : ${view.score.get()}")
+          val score = view.score.value
+          view.bonusScore.set(0)
+          view.score.set(0)
           resetGame(score) //GAME is OVER
         }
         else if (presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(2).toBoolean) {

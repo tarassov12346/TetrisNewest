@@ -11,36 +11,36 @@ import scalafx.scene.{Group, Scene}
 final case class TetrisDesktopGame(playerName: String) extends JFXApp3 {
 
   val view = new DesktopView()
-  val service = new ServiceFunctions(playerName,view)
+  val service = new ServiceFunctions(playerName, view)
 
   override def start(): Unit = {
     stage = new JFXApp3.PrimaryStage {
-      title = "TETRIS DESC-TOP GAME"
+      title = "TETRIS DESK-TOP GAME"
       val scheduledTask: ScheduledService[(Unit, Unit)] = ScheduledService.apply(
         Task.apply(() -> {
-         service.canCurrentFigureGoDownCheckAndMoveTheFigureAtOnePositionDownIfTrue
+          service.canCurrentFigureGoDownCheckAndMoveTheFigureAtOnePositionDownIfTrue
           service.analyzeTheAvailabilityOfBonusesAddToScoreIfTheRowIsFilledAndReduceTheFilledRow()
-          view.showFallenFiguresAndCurrentFigure(service.fallenFiguresListBuffer,service.currentFigureContainingArrayBuffer)
+          view.showFallenFiguresAndCurrentFigure(service.fallenFiguresListBuffer, service.currentFigureContainingArrayBuffer)
         })
       )
       scheduledTask.setPeriod(javafx.util.Duration.seconds(1))
       scene = new Scene(service.presetsObject.sceneWidth * service.presetsObject.figureCellScale, service.presetsObject.sceneHeight * service.presetsObject.figureCellScale) {
         fill = Color.rgb(192, 192, 192)
         val Root = new Group()
-        sfxGroup2jfx(Root).getChildren.addAll(view.fxSceneProtagonists, service.scoreObject.scoreText)
+        sfxGroup2jfx(Root).getChildren.addAll(view.fxSceneProtagonists, view.scoreText)
         root = Root
         onKeyPressed = key => {
           key.getCode match {
             case KeyCode.Left.delegate => if (service.canMoveTheFigureToLeft) service.currentFigureContainingArrayBuffer(0) = service.currentFigureContainingArrayBuffer(0).moveFigureToLeft()
-              view.showFallenFiguresAndCurrentFigure(service.fallenFiguresListBuffer,service.currentFigureContainingArrayBuffer)
+              view.showFallenFiguresAndCurrentFigure(service.fallenFiguresListBuffer, service.currentFigureContainingArrayBuffer)
             case KeyCode.Right.delegate => if (service.canMoveTheFigureToRight) service.currentFigureContainingArrayBuffer(0) = service.currentFigureContainingArrayBuffer(0).moveFigureToRight()
-              view.showFallenFiguresAndCurrentFigure(service.fallenFiguresListBuffer,service.currentFigureContainingArrayBuffer)
+              view.showFallenFiguresAndCurrentFigure(service.fallenFiguresListBuffer, service.currentFigureContainingArrayBuffer)
             case KeyCode.Space.delegate => if (service.canRotateTheFigure(true)) service.currentFigureContainingArrayBuffer(0) = service.currentFigureContainingArrayBuffer(0).rotateFigureClockwise()
-              view.showFallenFiguresAndCurrentFigure(service.fallenFiguresListBuffer,service.currentFigureContainingArrayBuffer)
+              view.showFallenFiguresAndCurrentFigure(service.fallenFiguresListBuffer, service.currentFigureContainingArrayBuffer)
             case KeyCode.Alt.delegate => if (service.canRotateTheFigure(false)) service.currentFigureContainingArrayBuffer(0) = service.currentFigureContainingArrayBuffer(0).rotateFigureAntiClockwise()
-              view.showFallenFiguresAndCurrentFigure(service.fallenFiguresListBuffer,service.currentFigureContainingArrayBuffer)
+              view.showFallenFiguresAndCurrentFigure(service.fallenFiguresListBuffer, service.currentFigureContainingArrayBuffer)
             case KeyCode.Down.delegate => if (!service.presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(0).toBoolean) service.makeFigureGoDownQuick()
-              view.showFallenFiguresAndCurrentFigure(service.fallenFiguresListBuffer,service.currentFigureContainingArrayBuffer)
+              view.showFallenFiguresAndCurrentFigure(service.fallenFiguresListBuffer, service.currentFigureContainingArrayBuffer)
             case KeyCode.P.delegate => service.presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(0) = (!service.presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(0).toBoolean).toString
             case KeyCode.C.delegate => if (service.presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(1).toBoolean) service.currentFigureContainingArrayBuffer(0) = service.generateRandomOrBonusFigure()
               service.presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(1) = "false"
