@@ -1,40 +1,27 @@
 package com.evolution.tetris.service
 
-import com.evolution.tetris.game.Figure
-import javafx.scene.shape.Rectangle
-import scalafx.application.Platform
-import scalafx.scene.Group
-import scalafx.scene.Group.sfxGroup2jfx
-import scalafx.scene.paint.Color
-import scalafx.scene.paint.Color.Red
-
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.util.Random
-
 import com.evolution.tetris.db.DataBase
+import com.evolution.tetris.desktopGame.DesktopView
 
 
-final case class ServiceFunctions(playerName: String) {
-
-
+final case class ServiceFunctions(playerName: String,view:DesktopView) {
   val presetsObject = new Presets()
   val scoreObject = new Score(presetsObject)
-
-  val tetrisSceneBooleanMatrixArrayBuffer: ArrayBuffer[ArrayBuffer[Boolean]] = ArrayBuffer.fill[Boolean](presetsObject.sceneHeight, presetsObject.sceneWidth)(false)
+  val tetrisSceneBooleanMatrixArrayBuffer: ArrayBuffer[ArrayBuffer[Boolean]] =
+    ArrayBuffer.fill[Boolean](presetsObject.sceneHeight, presetsObject.sceneWidth)(false)
   val fallenFiguresListBuffer = ListBuffer[Figure]()
-  val fxSceneProtagonists = new Group()
   val currentFigureContainingArrayBuffer: ArrayBuffer[Figure] = ArrayBuffer.fill[Figure](1)(generateRandomOrBonusFigure())
-  val figureSupposedToBeRotatedArrayBuffer = ArrayBuffer[Figure](Figure(currentFigureContainingArrayBuffer(0).horizontalPosition, currentFigureContainingArrayBuffer(0).verticalPosition, currentFigureContainingArrayBuffer(0).shapeFormingBooleanMatrix.clone(), currentFigureContainingArrayBuffer(0).color, presetsObject))
-
+  val figureSupposedToBeRotatedArrayBuffer =
+    ArrayBuffer[Figure](Figure(currentFigureContainingArrayBuffer(0).horizontalPosition, currentFigureContainingArrayBuffer(0).verticalPosition, currentFigureContainingArrayBuffer(0).shapeFormingBooleanMatrix.clone(), currentFigureContainingArrayBuffer(0).color, presetsObject))
   val db = new DataBase
-
-  def randomColor(): Color = scalafx.scene.paint.Color.rgb(Random.nextInt(255), Random.nextInt(255), Random.nextInt(255))
 
   def generateRandomOrBonusFigure(): Figure = {
     presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(3) match {
       case "no bonus" =>
         val figureShapeRandomPattern = presetsObject.presetFigureShapePatternsSequence(math.abs(Random.nextInt(presetsObject.presetFigureShapePatternsSequence.length)))
-        Figure(presetsObject.sceneWidth / 2, 0, figureShapeRandomPattern.toArray, randomColor(), presetsObject)
+        Figure(presetsObject.sceneWidth / 2, 0, figureShapeRandomPattern.toArray, view.randomColor(), presetsObject)
       //Check the previous 2 lines if smth goes wrong!!!!!!!!!!!!!!!!!!!!
       case "drop on one row down" =>
         scoreObject.bonusFiguresQuantity.set(scoreObject.bonusFiguresQuantity.get() - 1)
@@ -59,26 +46,6 @@ final case class ServiceFunctions(playerName: String) {
     fallenFiguresListBuffer.addOne(currentFigureContainingArrayBuffer(0))
     currentFigureContainingArrayBuffer(0) = generateRandomOrBonusFigure()
     scoreObject.score.set(scoreObject.score.get() + 5)
-  }
-
-  def showTheFigureOnTheScene(figure: Figure): Unit = {
-    for (i <- figure.shapeFormingBooleanMatrix.indices) {
-      for (j <- figure.shapeFormingBooleanMatrix(i).indices) {
-        if (figure.shapeFormingBooleanMatrix(i).nonEmpty) {
-          if (figure.shapeFormingBooleanMatrix(i)(j)) {
-            val rectangle = new Rectangle()
-            rectangle.setX((figure.horizontalPosition + j) * presetsObject.figureCellScale)
-            rectangle.setY((figure.verticalPosition + i) * presetsObject.figureCellScale)
-            rectangle.setWidth(presetsObject.figureCellScale)
-            rectangle.setHeight(presetsObject.figureCellScale)
-            rectangle.setFill(figure.color)
-            rectangle.setStroke(Red)
-            rectangle.setArcHeight(2.4)
-            sfxGroup2jfx(fxSceneProtagonists).getChildren.add(rectangle)
-          }
-        }
-      }
-    }
   }
 
   def analyzeTheAvailabilityOfBonusesAddToScoreIfTheRowIsFilledAndReduceTheFilledRow(): Unit = {
@@ -115,20 +82,14 @@ final case class ServiceFunctions(playerName: String) {
               fallenFigure.shapeFormingBooleanMatrix, fallenFigure.color, presetsObject)
           } else fallenFigure
         })
-
-        //showFallenFiguresAndCurrentFigure()
       }
     }
   }
 
 
-  def showFallenFiguresAndCurrentFigure(): Unit = {
-    Platform.runLater(() -> {
-      fxSceneProtagonists.getChildren.clear() //to clean up the traces from falling figures
-      fallenFiguresListBuffer.foreach(showTheFigureOnTheScene)
-      showTheFigureOnTheScene(currentFigureContainingArrayBuffer(0))
-    })
-  }
+
+ // def showTheScene(): Unit = view.showFallenFiguresAndCurrentFigure(fallenFiguresListBuffer,currentFigureContainingArrayBuffer)
+
 
   def makeFigureGoDownQuick(): Unit = {
     while (canCurrentFigureGoDownCheckAndMoveTheFigureAtOnePositionDownIfTrue) {
@@ -138,11 +99,9 @@ final case class ServiceFunctions(playerName: String) {
   def resetGame(score: Int): Unit = {
     db.Player(playerName, score).savePlayerScore()
     db.collectAllPlayersToListAndSortByScore.sortWith((x, y) => x.score > y.score).foreach(player => println(player))
-
     fallenFiguresListBuffer.clear()
     tetrisSceneBooleanMatrixArrayBuffer.clear()
     tetrisSceneBooleanMatrixArrayBuffer.addAll(ArrayBuffer.fill[Boolean](presetsObject.sceneHeight, presetsObject.sceneWidth)(false))
-    fxSceneProtagonists.getChildren.clear() //Apparently not needed
     presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(1) = "false"
     presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(2) = "false"
     presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(3) = "no bonus"
@@ -185,7 +144,6 @@ final case class ServiceFunctions(playerName: String) {
           formResultingHardBottomOfTheSceneAddCurrentFigureToFallenFiguresListCallNextFigureAndAddToScore()
         }
       }
-      //ServiceFunctions.showFallenFiguresAndCurrentFigure()
       canTheFigureGoDown
     }
   }

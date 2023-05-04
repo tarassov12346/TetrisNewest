@@ -1,10 +1,8 @@
-package com.evolution.tetris.game
+package com.evolution.tetris.service
 
-import com.evolution.tetris.service.Presets
-
-final case class Figure(horizontalPosition:Int, verticalPosition:Int = 0,
-             shapeFormingBooleanMatrix: Array[Array[Boolean]], color:scalafx.scene.paint.Color,
-             presetsObject: Presets) {
+final case class Figure(horizontalPosition: Int, verticalPosition: Int = 0,
+                        shapeFormingBooleanMatrix: Array[Array[Boolean]], color: scalafx.scene.paint.Color,
+                        presetsObject: Presets) {
 
   def rotateFigureClockwise(): Figure =
     Figure(horizontalPosition, verticalPosition, shapeFormingBooleanMatrix.reverse.transpose[Boolean], color,
