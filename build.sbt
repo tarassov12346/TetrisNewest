@@ -29,6 +29,10 @@ libraryDependencies ++= Seq(
 
 )
 
+libraryDependencies += "com.typesafe" % "config" % "1.3.1"
+
+libraryDependencies += "org.http4s" %% "http4s-client" % "0.23.18"
+
 
 
 lazy val root = (project in file("."))
