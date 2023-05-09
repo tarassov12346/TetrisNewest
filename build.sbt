@@ -31,7 +31,18 @@ libraryDependencies ++= Seq(
 
 libraryDependencies += "com.typesafe" % "config" % "1.3.1"
 
-libraryDependencies += "org.http4s" %% "http4s-client" % "0.23.18"
+val http4sVersion      = "0.23.18"
+
+libraryDependencies ++=Seq(
+  "org.http4s"               %% "http4s-dsl"                    % http4sVersion,
+  "org.http4s"               %% "http4s-ember-server"           % http4sVersion,
+  "org.http4s"               %% "http4s-ember-client"           % http4sVersion,
+  "org.http4s"               %% "http4s-circe"                  % http4sVersion,
+  "org.http4s"               %% "http4s-jdk-http-client"        % "0.9.0",
+)
+
+libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.1.3" % Runtime
+
 
 
 

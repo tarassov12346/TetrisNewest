@@ -20,8 +20,8 @@ class DataBase {
       sql"insert into player (name, score) values ($name, $score)".update.run.transact(xa).unsafeRunSync()
   }
 
-  // def find(n: String): Option[Player] =
-  //   sql"select name, score from player where name = $n".query[Player].option.transact(xa).unsafeRunSync()
+   def find(n: String): List[Player] =
+     sql"select name, score from player where name = $n".query[Player].to[List].transact(xa).unsafeRunSync()
 
   def collectAllPlayersToListAndSortByScore: List[Player] = {
     sql"select * from player".query[Player].to[List].transact(xa).unsafeRunSync()

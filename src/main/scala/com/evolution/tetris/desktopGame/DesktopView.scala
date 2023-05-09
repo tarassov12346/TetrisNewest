@@ -30,7 +30,7 @@ final case class DesktopView(playerName: String) {
   val score: IntegerProperty = new IntegerProperty() {
     onChange { (_, _, newValue) =>
       Platform.runLater(() -> {
-        scoreText.setText(s"SCORE: ${newValue.toString} \n " +
+        scoreText.setText(serviceFunctions.playerName+"'s "+s"SCORE: ${newValue.toString} \n " +
           s"Assigned bonus simple figures: ${bonusFiguresQuantity.toInt}\n" +
           s" BONUS SCORE: ${bonusScore.toInt}\n" +
           s" Can use C-key to change a figure: ${serviceFunctions.presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(1)}\n" +
