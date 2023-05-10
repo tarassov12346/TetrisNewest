@@ -16,10 +16,6 @@ object Main extends IOApp {
 
   val db = new DataBase
 
-  private def printLine(string: String = ""): IO[Unit] = IO {
-    println(string)
-  }
-
   override def run(args: List[String]): IO[ExitCode] = {
 
     println("Enter your name:")
@@ -34,21 +30,23 @@ object Main extends IOApp {
         _ <- client.send(WSFrame.Text(playerName))
         _ <- client.receiveStream
           .collectFirst { case WSFrame.Text(s, _) =>
+            println("WebsocketServer: "+s+" has started playing")
             s
           }
           .compile
           .string >>=
-          printLine >>=
           (_ => IO(TetrisDesktopGame(playerName).main(Array()))) >>=
           (_ => IO(println("***************\n"+
             playerName +
             "'s Best Result: " +
             db.find(playerName).sortWith((x, y) => x.score > y.score).head))
           )
+        _ <- client.send(WSFrame.Text("time"))
         _ <- client.receiveStream
           .collectFirst { case WSFrame.Text(s, _) =>
+            println("Current time from WebsocketServer is "+s)
             s
-          }.compile.string >>= printLine
+          }.compile.string
       } yield ExitCode.Success
     }
   }
