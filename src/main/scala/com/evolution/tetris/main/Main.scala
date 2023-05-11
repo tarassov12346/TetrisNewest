@@ -22,6 +22,7 @@ object Main extends IOApp {
     println("Enter your name:")
     val playerName = scala.io.StdIn.readLine()
 
+
     val clientResource = Resource
       .eval(IO(HttpClient.newHttpClient()))
       .flatMap(JdkWSClient[IO](_).connectHighLevel(WSRequest(uri)))

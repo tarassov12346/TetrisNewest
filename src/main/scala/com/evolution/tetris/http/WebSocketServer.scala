@@ -4,6 +4,7 @@ import cats.effect.std.Queue
 import cats.effect.{Clock, ExitCode, IO, IOApp}
 import cats.implicits.catsSyntaxApplicativeId
 import com.comcast.ip4s._
+import com.typesafe.config.ConfigFactory
 import fs2.{Pipe, Stream}
 import org.http4s.dsl.io._
 import org.http4s.ember.server._
@@ -50,14 +51,17 @@ object WebSocketServer extends IOApp {
     echoRoute(wsb)
   }.orNotFound
 
-  override def run(args: List[String]): IO[ExitCode] =
+  override def run(args: List[String]): IO[ExitCode] = {
+    val hostString = ConfigFactory.load().getString("myServer.host.value")
+    val portString = ConfigFactory.load().getString("myServer.port.value")
     for {
       _ <- EmberServerBuilder
         .default[IO]
-        .withHost(ipv4"127.0.0.1")
-        .withPort(port"9002")
+        .withHost(Host.fromString(hostString).get)
+        .withPort(Port.fromString(portString).get)
         .withHttpWebSocketApp(httpApp)
         .build
         .useForever
     } yield ExitCode.Success
+  }
 }
