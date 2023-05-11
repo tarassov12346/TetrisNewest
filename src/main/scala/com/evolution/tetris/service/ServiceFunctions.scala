@@ -1,7 +1,9 @@
 package com.evolution.tetris.service
 
+import cats.effect.unsafe.implicits.global
 import com.evolution.tetris.db.DataBase
 import com.evolution.tetris.service
+
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.util.Random
 
@@ -92,8 +94,8 @@ final case class ServiceFunctions(playerName: String) {
   }
 
   def resetGame(score: Int): Unit = {
-    db.Player(playerName, score).savePlayerScore()
-    db.collectAllPlayersToListAndSortByScore.sortWith((x, y) => x.score > y.score).foreach(player => println(player))
+    db.PlayerDao.savePlayerScore(playerName, score).unsafeRunSync()
+    db.PlayerDao.collectAllPlayersToListAndSortByScore.unsafeRunSync().sortWith((x, y) => x.score > y.score).foreach(player => println(player))
     fallenFiguresListBuffer.clear()
     tetrisSceneBooleanMatrixArrayBuffer.clear()
     tetrisSceneBooleanMatrixArrayBuffer.addAll(ArrayBuffer.fill[Boolean](presetsObject.sceneHeight, presetsObject.sceneWidth)(false))

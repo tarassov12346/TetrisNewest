@@ -1,29 +1,43 @@
 package com.evolution.tetris.db
 
+import cats.effect.IO
+import com.evolution.tetris.service.Player
+import com.typesafe.config.{Config, ConfigFactory}
 import doobie._
 import doobie.implicits._
-import cats.effect.IO
-import cats.effect.unsafe.implicits.global
-import com.typesafe.config.ConfigFactory
+import doobie.util.transactor
 
 class DataBase {
-  val driver = ConfigFactory.load().getString("myDb.driver.value")
-  val url = ConfigFactory.load().getString("myDb.url.value")
-  val user = ConfigFactory.load().getString("myDb.user.value")
-  val pass = ConfigFactory.load().getString("myDb.pass.value")
-  val xa = Transactor.fromDriverManager[IO](
-    driver, url, user, pass
-  )
 
-  case class Player(name: String, score: Int) {
-    def savePlayerScore(): Int =
-      sql"insert into player (name, score) values ($name, $score)".update.run.transact(xa).unsafeRunSync()
+  trait PlayerDao {
+
+    def from(config:Config): transactor.Transactor.Aux[IO, Unit]
+
+    def savePlayerScore(name: String, score: Int): IO[Int]
+
+    def find(n: String): IO[List[Player]]
+
+    def collectAllPlayersToListAndSortByScore: IO[List[Player]]
+
   }
 
-   def find(n: String): List[Player] =
-     sql"select name, score from player where name = $n".query[Player].to[List].transact(xa).unsafeRunSync()
+  object PlayerDao extends PlayerDao {
 
-  def collectAllPlayersToListAndSortByScore: List[Player] = {
-    sql"select * from player".query[Player].to[List].transact(xa).unsafeRunSync()
+    def from(config:Config) = {
+      val driver = config.getString("myDb.driver.value")
+      val url = config.getString("myDb.url.value")
+      val user = config.getString("myDb.user.value")
+      val pass = config.getString("myDb.pass.value")
+      Transactor.fromDriverManager[IO](driver, url, user, pass)
+    }
+
+    def savePlayerScore(name: String, score: Int): IO[Int] =
+      sql"insert into player (name, score) values ($name, $score)".update.run.transact(from(ConfigFactory.load()))
+
+    def find(n: String): IO[List[Player]] =
+      sql"select name, score from player where name = $n".query[Player].to[List].transact(from(ConfigFactory.load()))
+
+    def collectAllPlayersToListAndSortByScore: IO[List[Player]] =
+      sql"select * from player".query[Player].to[List].transact(from(ConfigFactory.load()))
   }
 }

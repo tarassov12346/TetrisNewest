@@ -1,5 +1,6 @@
 package com.evolution.tetris.main
 
+import cats.effect.unsafe.implicits.global
 import cats.effect.{ExitCode, IO, IOApp, Resource}
 import cats.syntax.all._
 import com.evolution.tetris.db.DataBase
@@ -39,7 +40,7 @@ object Main extends IOApp {
           (_ => IO(println("***************\n"+
             playerName +
             "'s Best Result: " +
-            db.find(playerName).sortWith((x, y) => x.score > y.score).head))
+            db.PlayerDao.find(playerName).unsafeRunSync().sortWith((x, y) => x.score > y.score).head))
           )
         _ <- client.send(WSFrame.Text("time"))
         _ <- client.receiveStream
