@@ -13,7 +13,7 @@ import org.http4s.server.websocket.WebSocketBuilder2
 import org.http4s.websocket.WebSocketFrame
 import org.http4s.{HttpRoutes, _}
 
-object WebSocketServer extends IOApp {
+object WebSocketServerOld extends IOApp {
 
   // Let's build a WebSocket server using Http4s.
   private def echoRoute(wsb: WebSocketBuilder2[IO]) = HttpRoutes.of[IO] {

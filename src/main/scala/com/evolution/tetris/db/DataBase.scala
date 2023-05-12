@@ -10,7 +10,7 @@ class DataBase {
 
   trait PlayerDao {
 
-    def from(config:Config): PlayerDao
+    def from(config:Config): IO[PlayerDao]
 
     def savePlayerScore(name: String, score: Int): IO[Int]
 
@@ -24,7 +24,7 @@ class DataBase {
 
     val xaArray = Array(Transactor.fromDriverManager[IO]("", "", "", ""))
 
-    def from(config:Config):PlayerDao = {
+    def from(config:Config):IO[PlayerDao.type] = IO{
       val driver = config.getString("myDb.driver.value")
       val url = config.getString("myDb.url.value")
       val user = config.getString("myDb.user.value")

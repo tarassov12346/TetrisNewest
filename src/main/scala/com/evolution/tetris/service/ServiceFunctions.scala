@@ -95,8 +95,10 @@ final case class ServiceFunctions(playerName: String) {
   }
 
   def resetGame(score: Int): Unit = {
-    db.PlayerDao.from(ConfigFactory.load()).savePlayerScore(playerName, score).unsafeRunSync()
-    db.PlayerDao.from(ConfigFactory.load()).collectAllPlayersToListAndSortByScore.unsafeRunSync().sortWith((x, y) => x.score > y.score).foreach(player => println(player))
+   // db.PlayerDao.from(ConfigFactory.load()).savePlayerScore(playerName, score).unsafeRunSync()
+   // db.PlayerDao.from(ConfigFactory.load()).collectAllPlayersToListAndSortByScore.unsafeRunSync().sortWith((x, y) => x.score > y.score).foreach(player => println(player))
+    db.PlayerDao.from(ConfigFactory.load()).unsafeRunSync().savePlayerScore(playerName, score).unsafeRunSync()
+    db.PlayerDao.from(ConfigFactory.load()).unsafeRunSync().collectAllPlayersToListAndSortByScore.unsafeRunSync().sortWith((x, y) => x.score > y.score).foreach(player => println(player))
     fallenFiguresListBuffer.clear()
     tetrisSceneBooleanMatrixArrayBuffer.clear()
     tetrisSceneBooleanMatrixArrayBuffer.addAll(ArrayBuffer.fill[Boolean](presetsObject.sceneHeight, presetsObject.sceneWidth)(false))
