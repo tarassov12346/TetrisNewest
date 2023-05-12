@@ -5,6 +5,7 @@ import cats.effect.{ExitCode, IO, IOApp, Resource}
 import cats.syntax.all._
 import com.evolution.tetris.db.DataBase
 import com.evolution.tetris.desktopGame.TetrisDesktopGame
+import com.typesafe.config.ConfigFactory
 import org.http4s.client.websocket.{WSFrame, WSRequest}
 import org.http4s.implicits._
 import org.http4s.jdkhttpclient.JdkWSClient
@@ -41,7 +42,7 @@ object Main extends IOApp {
           (_ => IO(println("***************\n"+
             playerName +
             "'s Best Result: " +
-            db.PlayerDao.find(playerName).unsafeRunSync().sortWith((x, y) => x.score > y.score).head))
+            db.PlayerDao.from(ConfigFactory.load()).find(playerName).unsafeRunSync().sortWith((x, y) => x.score > y.score).head))
           )
         _ <- client.send(WSFrame.Text("time"))
         _ <- client.receiveStream
