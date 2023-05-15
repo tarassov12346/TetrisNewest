@@ -14,21 +14,21 @@ import org.http4s.server.websocket.WebSocketBuilder2
 import org.http4s.websocket.WebSocketFrame
 import org.http4s.{HttpRoutes, _}
 
-class WebsocketServer {
+class WebSocketServer {
 
   object WebSocketServer {
     // Let's build a WebSocket server using Http4s.
     private def dbRoute(wsb: WebSocketBuilder2[IO],playerDao: db.PlayerDao)=HttpRoutes.of[IO] {
 
       // websocat "ws://localhost:9002/echo"
-      case GET -> Root / "db" =>
+      case GET -> Root  =>
         // Pipe is a stream transformation function of type `Stream[F, I] => Stream[F, O]`. In this case
         // `I == O == WebSocketFrame`. So the pipe transforms incoming WebSocket messages from the client to
         // outgoing WebSocket messages to send to the client.
         val dbPipe: Pipe[IO, WebSocketFrame, WebSocketFrame] =
           _.collect { case WebSocketFrame.Text(message, _) =>
             val f =playerDao.from(ConfigFactory.load()).unsafeRunSync().find(message).unsafeRunSync().sortWith((x, y) => x.score > y.score).head
-            WebSocketFrame.Text(f.toString)
+            WebSocketFrame.Text(f.name+"'s BEST score is "+f.score)
           }
         for {
           // Unbounded queue to store WebSocket messages from the client, which are pending to be processed.

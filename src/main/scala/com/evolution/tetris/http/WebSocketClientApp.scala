@@ -7,12 +7,12 @@ import org.http4s.jdkhttpclient.JdkWSClient
 
 import java.net.http.HttpClient
 
-object WebSocketClient extends IOApp{
+object WebSocketClientApp extends IOApp{
 
   private val uri = uri"ws://localhost:9002/db"
 
   override def run(args: List[String]): IO[ExitCode] = {
-    println("Enter your name:")
+    println("Enter player's name:")
     val playerName = scala.io.StdIn.readLine()
 
     val clientResource = Resource
@@ -24,7 +24,7 @@ object WebSocketClient extends IOApp{
         _ <- client.send(WSFrame.Text(playerName))
         _ <- client.receiveStream
           .collectFirst { case WSFrame.Text(s, _) =>
-           println(s)
+           println(playerName+"'s best result is "+s)
             s
           }
           .compile
