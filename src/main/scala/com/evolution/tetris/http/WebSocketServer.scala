@@ -4,7 +4,7 @@ import cats.effect.std.Queue
 import cats.effect.unsafe.implicits.global
 import cats.effect.{ExitCode, IO, Resource}
 import com.comcast.ip4s._
-import com.evolution.tetris.main.MainHttp.db
+import com.evolution.tetris.main.Main.db
 import com.typesafe.config.{Config, ConfigFactory}
 import fs2.{Pipe, Stream}
 import org.http4s.dsl.io._

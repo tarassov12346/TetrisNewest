@@ -1,12 +1,13 @@
 package com.evolution.tetris.main
 
 import cats.effect.{ExitCode, IO, IOApp}
+import com.evolution.tetris.db.DataBase
 import com.evolution.tetris.http.{TetrisGame, WebSocketHtmlInBrowser, WebSocketServer}
-import com.evolution.tetris.main.MainHttp.db
 import com.typesafe.config.ConfigFactory
 
 object Main extends IOApp {
   val wb = new WebSocketServer()
+  val db = new DataBase
 
   override def run(args: List[String]): IO[ExitCode] = {
     println("Enter your name:")
