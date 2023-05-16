@@ -20,16 +20,22 @@ class WebSocketServer {
     // Let's build a WebSocket server using Http4s.
     private def dbRoute(wsb: WebSocketBuilder2[IO],playerDao: db.PlayerDao)=HttpRoutes.of[IO] {
 
-      // websocat "ws://localhost:9002/echo"
+      // websocat "ws://localhost:8080"
       case GET -> Root  =>
         // Pipe is a stream transformation function of type `Stream[F, I] => Stream[F, O]`. In this case
         // `I == O == WebSocketFrame`. So the pipe transforms incoming WebSocket messages from the client to
         // outgoing WebSocket messages to send to the client.
         val dbPipe: Pipe[IO, WebSocketFrame, WebSocketFrame] =
           _.collect { case WebSocketFrame.Text(message, _) =>
-            val f =playerDao.from(ConfigFactory.load()).unsafeRunSync().find(message).unsafeRunSync().sortWith((x, y) => x.score > y.score).head
-            WebSocketFrame.Text(f.name+"'s BEST score is "+f.score)
+
+            if (message.startsWith("*")) WebSocketFrame.Text(message.replace("*","")+" has joined the game!")
+            else {
+              val f =playerDao.from(ConfigFactory.load()).unsafeRunSync().find(message).unsafeRunSync().sortWith((x, y) => x.score > y.score).head
+              WebSocketFrame.Text(f.name+"'s BEST score is "+f.score)
+            }
+
           }
+
         for {
           // Unbounded queue to store WebSocket messages from the client, which are pending to be processed.
           // For production use bounded queue seems a better choice. Unbounded queue may result in out of
