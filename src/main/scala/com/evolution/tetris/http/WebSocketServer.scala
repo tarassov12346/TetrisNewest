@@ -36,19 +36,19 @@ class WebSocketServer {
           case "4" =>
             val moveFigureLeft: Unit = http.tetris.service.currentFigureContainingArrayBuffer(0) = http.tetris.service.currentFigureContainingArrayBuffer(0).moveFigureToLeft()
             if (http.tetris.service.canMoveTheFigureToLeft)
-              WebSocketFrame.Text("Figure moved left " + moveFigureLeft.toString + showAllFigures.toString)
+              WebSocketFrame.Text("Figure moved left: " + moveFigureLeft.toString + showAllFigures.toString + http.tetris.service.currentFigureContainingArrayBuffer(0).moveFigureToLeft().toString)
             else WebSocketFrame.Text("No further left move possible!")
 
           case "6" =>
             val moveFigureRight: Unit = http.tetris.service.currentFigureContainingArrayBuffer(0) = http.tetris.service.currentFigureContainingArrayBuffer(0).moveFigureToRight()
             if (http.tetris.service.canMoveTheFigureToRight)
-              WebSocketFrame.Text("Figure moved right " + moveFigureRight.toString + showAllFigures.toString)
+              WebSocketFrame.Text("Figure moved right: " + moveFigureRight.toString + showAllFigures.toString + http.tetris.service.currentFigureContainingArrayBuffer(0).moveFigureToRight().toString)
             else WebSocketFrame.Text("No further right move possible!")
 
           case "5" =>
             val rotateFigure: Unit = http.tetris.service.currentFigureContainingArrayBuffer(0) = http.tetris.service.currentFigureContainingArrayBuffer(0).rotateFigureClockwise()
             if (http.tetris.service.canRotateTheFigure(true))
-              WebSocketFrame.Text("Figure rotate " + rotateFigure.toString + showAllFigures.toString)
+              WebSocketFrame.Text("Figure rotated: " + rotateFigure.toString + showAllFigures.toString + http.tetris.service.currentFigureContainingArrayBuffer(0).rotateFigureClockwise().toString)
             else WebSocketFrame.Text("No rotation possible!")
 
           case "2" =>
@@ -65,7 +65,7 @@ class WebSocketServer {
             val changeFigure: Unit = http.tetris.service.currentFigureContainingArrayBuffer(0) = http.tetris.service.generateRandomOrBonusFigure()
             val turnOff: Unit = http.tetris.service.presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(1) = "false"
             if (http.tetris.service.presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(1).toBoolean)
-              WebSocketFrame.Text("Figure changed  " + changeFigure.toString + turnOff.toString)
+              WebSocketFrame.Text("Figure changed  " + changeFigure.toString + turnOff.toString + http.tetris.service.generateRandomOrBonusFigure().toString)
             else WebSocketFrame.Text("No Figure change is allowed for now!")
 
           case _ =>
