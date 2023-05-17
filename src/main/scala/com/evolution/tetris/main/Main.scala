@@ -17,8 +17,8 @@ object Main extends IOApp {
       config <- IO(ConfigFactory.load())
       playerDao <- db.PlayerDao.from(config)
       _ <- WebSocketHtmlInBrowser.getHtml1
-      _ <- WebSocketHtmlInBrowser.getHtml2
-      _ <- WebSocketHtmlInBrowser.getHtml3
+    //  _ <- WebSocketHtmlInBrowser.getHtml2
+    //  _ <- WebSocketHtmlInBrowser.getHtml3
       _ <- wb.WebSocketServer.run(config, playerDao, http).useForever.both(http.start()).
         both(WebSocketClient(playerName,"*").WebSocketClient.run())
     } yield ExitCode.Success
