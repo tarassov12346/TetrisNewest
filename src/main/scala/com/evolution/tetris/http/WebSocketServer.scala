@@ -29,39 +29,50 @@ class WebSocketServer {
         // `I == O == WebSocketFrame`. So the pipe transforms incoming WebSocket messages from the client to
         // outgoing WebSocket messages to send to the client.
         val dbPipe: Pipe[IO, WebSocketFrame, WebSocketFrame] =
-          _.collect { case WebSocketFrame.Text(message, _) => message.trim.charAt(0).toString match {
-            case "*" => WebSocketFrame.Text(message.replace("*", "") + " has joined the game!")
+        _.collect { case WebSocketFrame.Text(message, _) => message.trim.charAt(0).toString match {
 
-            case "@" => WebSocketFrame.Text("Current player name is " + http.tetris.playerName + " and his current score is " + http.tetris.view.score.value.toString())
+          case "@" => WebSocketFrame.Text("Current player name is " + http.tetris.playerName + " and his current score is " + http.tetris.view.score.value.toString())
 
-            case "4" =>
-              val moveFigureLeft: Unit = http.tetris.service.currentFigureContainingArrayBuffer(0) = http.tetris.service.currentFigureContainingArrayBuffer(0).moveFigureToLeft()
-              if (http.tetris.service.canMoveTheFigureToLeft)
-                WebSocketFrame.Text("Figure move left " + moveFigureLeft.toString + showAllFigures.toString)
-              else WebSocketFrame.Text("No action!")
+          case "4" =>
+            val moveFigureLeft: Unit = http.tetris.service.currentFigureContainingArrayBuffer(0) = http.tetris.service.currentFigureContainingArrayBuffer(0).moveFigureToLeft()
+            if (http.tetris.service.canMoveTheFigureToLeft)
+              WebSocketFrame.Text("Figure moved left " + moveFigureLeft.toString + showAllFigures.toString)
+            else WebSocketFrame.Text("No further left move possible!")
 
-            case "6" =>
-              val moveFigureRight: Unit = http.tetris.service.currentFigureContainingArrayBuffer(0) = http.tetris.service.currentFigureContainingArrayBuffer(0).moveFigureToRight()
-              if (http.tetris.service.canMoveTheFigureToRight)
-                WebSocketFrame.Text("Figure move right " + moveFigureRight.toString + showAllFigures.toString)
-              else WebSocketFrame.Text("No action!")
+          case "6" =>
+            val moveFigureRight: Unit = http.tetris.service.currentFigureContainingArrayBuffer(0) = http.tetris.service.currentFigureContainingArrayBuffer(0).moveFigureToRight()
+            if (http.tetris.service.canMoveTheFigureToRight)
+              WebSocketFrame.Text("Figure moved right " + moveFigureRight.toString + showAllFigures.toString)
+            else WebSocketFrame.Text("No further right move possible!")
 
-            case "5" =>
-              val rotateFigure: Unit = http.tetris.service.currentFigureContainingArrayBuffer(0) = http.tetris.service.currentFigureContainingArrayBuffer(0).rotateFigureClockwise()
-              if (http.tetris.service.canRotateTheFigure(true))
-                WebSocketFrame.Text("Figure rotate " + rotateFigure.toString + showAllFigures.toString)
-              else WebSocketFrame.Text("No action!")
+          case "5" =>
+            val rotateFigure: Unit = http.tetris.service.currentFigureContainingArrayBuffer(0) = http.tetris.service.currentFigureContainingArrayBuffer(0).rotateFigureClockwise()
+            if (http.tetris.service.canRotateTheFigure(true))
+              WebSocketFrame.Text("Figure rotate " + rotateFigure.toString + showAllFigures.toString)
+            else WebSocketFrame.Text("No rotation possible!")
 
-            case "2" =>
-              val dropFigure: Unit = http.tetris.service.makeFigureGoDownQuick()
-              if (!http.tetris.service.presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(0).toBoolean)
-                WebSocketFrame.Text("Figure down  " + dropFigure.toString + showAllFigures.toString)
-              else WebSocketFrame.Text("No action!")
+          case "2" =>
+            val dropFigure: Unit = http.tetris.service.makeFigureGoDownQuick()
+            if (!http.tetris.service.presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(0).toBoolean)
+              WebSocketFrame.Text("Figure dropped  " + dropFigure.toString + showAllFigures.toString)
+            else WebSocketFrame.Text("No drop possible!")
 
-            case _ => val f = playerDao.from(ConfigFactory.load()).unsafeRunSync().find(message).unsafeRunSync().sortWith((x, y) => x.score > y.score).head
-              WebSocketFrame.Text(f.name + "'s BEST score is " + f.score)
-          }
-          }
+          case "7" =>
+            val pauseGame: Unit = http.tetris.service.presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(0) = (!http.tetris.service.presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(0).toBoolean).toString
+            WebSocketFrame.Text("Game paused  " + pauseGame.toString + showAllFigures.toString)
+
+          case "9" =>
+            val changeFigure: Unit = http.tetris.service.currentFigureContainingArrayBuffer(0) = http.tetris.service.generateRandomOrBonusFigure()
+            val turnOff: Unit = http.tetris.service.presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(1) = "false"
+            if (http.tetris.service.presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(1).toBoolean)
+              WebSocketFrame.Text("Figure changed  " + changeFigure.toString + turnOff.toString)
+            else WebSocketFrame.Text("No Figure change is allowed for now!")
+
+          case _ =>
+            val f = playerDao.from(ConfigFactory.load()).unsafeRunSync().find(message).unsafeRunSync().sortWith((x, y) => x.score > y.score).head
+            WebSocketFrame.Text(f.name + "'s BEST score is " + f.score)
+        }
+        }
 
         for {
           // Unbounded queue to store WebSocket messages from the client, which are pending to be processed.
