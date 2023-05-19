@@ -69,8 +69,11 @@ class WebSocketServer {
             else WebSocketFrame.Text("No Figure change is allowed for now!")
 
           case _ =>
-            val f = playerDao.from(ConfigFactory.load()).unsafeRunSync().find(message).unsafeRunSync().sortWith((x, y) => x.score > y.score).head
-            WebSocketFrame.Text(f.name + "'s BEST score is " + f.score)
+            val f = playerDao.from(ConfigFactory.load()).unsafeRunSync().find(message).unsafeRunSync().sortWith((x, y) => x.score > y.score).headOption
+            f match {
+              case Some(value) =>  WebSocketFrame.Text(value.name + "'s BEST score is " + value.score)
+              case None => WebSocketFrame.Text("None!")
+            }
         }
         }
 

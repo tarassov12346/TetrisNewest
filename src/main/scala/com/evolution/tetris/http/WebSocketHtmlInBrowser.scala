@@ -8,3 +8,4 @@ object WebSocketHtmlInBrowser {
   val getHtml1: IO[Unit] =IO(java.awt.Desktop.getDesktop.browse(uri1))
   }
 
+

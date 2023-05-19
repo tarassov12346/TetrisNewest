@@ -65,7 +65,7 @@ libraryDependencies ++= Seq(
 
 
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.12" % Runtime
-
+libraryDependencies += "com.typesafe.akka"%%"akka-actor-typed" % "2.8.0"
 
 
 
