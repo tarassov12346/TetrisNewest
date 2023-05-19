@@ -67,10 +67,12 @@ class WebSocketServer {
               WebSocketFrame.Text("Game paused  " + pauseGame.toString + showAllFigures.toString)
 
             case "9" =>
-              val changeFigure: Unit = http.tetris.service.currentFigureContainingArrayBuffer(0) = http.tetris.service.generateRandomOrBonusFigure()
-              val turnOff: Unit = http.tetris.service.presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(1) = "false"
-              if (http.tetris.service.presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(1).toBoolean)
+              if (http.tetris.service.presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(1).toBoolean) {
+                val changeFigure: Unit = http.tetris.service.currentFigureContainingArrayBuffer(0) = http.tetris.service.generateRandomOrBonusFigure()
+                val turnOff: Unit = http.tetris.service.presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(1) = "false"
                 WebSocketFrame.Text("Figure changed  " + changeFigure.toString + turnOff.toString + http.tetris.service.generateRandomOrBonusFigure().toString)
+              }
+
               else WebSocketFrame.Text("No Figure change is allowed for now!")
 
             case _ =>
