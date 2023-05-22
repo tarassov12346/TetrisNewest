@@ -8,6 +8,8 @@ import com.typesafe.config.ConfigFactory
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.util.Random
 
+import org.slf4j.LoggerFactory
+
 final case class ServiceFunctions(playerName: String) {
   val presetsObject = new Presets()
   val tetrisSceneBooleanMatrixArrayBuffer: ArrayBuffer[ArrayBuffer[Boolean]] =
@@ -95,8 +97,9 @@ final case class ServiceFunctions(playerName: String) {
   }
 
   def resetGame(score: Int): Unit = {
+    val my_logger = LoggerFactory.getLogger(getClass.getSimpleName)
     db.PlayerDao.from(ConfigFactory.load()).unsafeRunSync().savePlayerScore(playerName, score).unsafeRunSync()
-    db.PlayerDao.from(ConfigFactory.load()).unsafeRunSync().collectAllPlayersToListAndSortByScore.unsafeRunSync().sortWith((x, y) => x.score > y.score).foreach(player => println(player))
+    db.PlayerDao.from(ConfigFactory.load()).unsafeRunSync().collectAllPlayersToListAndSortByScore.unsafeRunSync().sortWith((x, y) => x.score > y.score).foreach(player =>  my_logger.info(player.toString)/*println(player)*/)
     fallenFiguresListBuffer.clear()
     tetrisSceneBooleanMatrixArrayBuffer.clear()
     tetrisSceneBooleanMatrixArrayBuffer.addAll(ArrayBuffer.fill[Boolean](presetsObject.sceneHeight, presetsObject.sceneWidth)(false))
@@ -106,6 +109,7 @@ final case class ServiceFunctions(playerName: String) {
   }
 
   def canCurrentFigureGoDownCheckAndMoveTheFigureAtOnePositionDownIfTrue: Boolean = {
+    val my_logger = LoggerFactory.getLogger(getClass.getSimpleName)
     val indexOfTheRowUnder = currentFigureContainingArrayBuffer(0).verticalPosition + currentFigureContainingArrayBuffer(0).shapeFormingBooleanMatrix.length
     if (indexOfTheRowUnder == presetsObject.sceneHeight) {
       formResultingHardBottomOfTheSceneAddCurrentFigureToFallenFiguresListCallNextFigureAndAddToScore()
@@ -128,7 +132,8 @@ final case class ServiceFunctions(playerName: String) {
       }
       else {
         if (currentFigureContainingArrayBuffer(0).verticalPosition <= 0) {
-          println(playerName+s"'s SCORE : ${scoreArrayOfScoreAndBonusScoreAndBonusFigureQuantity(0)}")
+          my_logger.info(playerName+s"'s SCORE : ${scoreArrayOfScoreAndBonusScoreAndBonusFigureQuantity(0)}")
+          //println(playerName+s"'s SCORE : ${scoreArrayOfScoreAndBonusScoreAndBonusFigureQuantity(0)}")
           val score = scoreArrayOfScoreAndBonusScoreAndBonusFigureQuantity(0)
           scoreArrayOfScoreAndBonusScoreAndBonusFigureQuantity(1)=0
           scoreArrayOfScoreAndBonusScoreAndBonusFigureQuantity(0)=0
