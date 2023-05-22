@@ -95,8 +95,6 @@ final case class ServiceFunctions(playerName: String) {
   }
 
   def resetGame(score: Int): Unit = {
-   // db.PlayerDao.from(ConfigFactory.load()).savePlayerScore(playerName, score).unsafeRunSync()
-   // db.PlayerDao.from(ConfigFactory.load()).collectAllPlayersToListAndSortByScore.unsafeRunSync().sortWith((x, y) => x.score > y.score).foreach(player => println(player))
     db.PlayerDao.from(ConfigFactory.load()).unsafeRunSync().savePlayerScore(playerName, score).unsafeRunSync()
     db.PlayerDao.from(ConfigFactory.load()).unsafeRunSync().collectAllPlayersToListAndSortByScore.unsafeRunSync().sortWith((x, y) => x.score > y.score).foreach(player => println(player))
     fallenFiguresListBuffer.clear()
@@ -130,7 +128,7 @@ final case class ServiceFunctions(playerName: String) {
       }
       else {
         if (currentFigureContainingArrayBuffer(0).verticalPosition <= 0) {
-          println(s"SCORE : ${scoreArrayOfScoreAndBonusScoreAndBonusFigureQuantity(0)}")
+          println(playerName+s"'s SCORE : ${scoreArrayOfScoreAndBonusScoreAndBonusFigureQuantity(0)}")
           val score = scoreArrayOfScoreAndBonusScoreAndBonusFigureQuantity(0)
           scoreArrayOfScoreAndBonusScoreAndBonusFigureQuantity(1)=0
           scoreArrayOfScoreAndBonusScoreAndBonusFigureQuantity(0)=0
