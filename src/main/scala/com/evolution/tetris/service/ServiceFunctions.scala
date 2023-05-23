@@ -1,16 +1,14 @@
 package com.evolution.tetris.service
 
 import cats.effect.unsafe.implicits.global
-import com.evolution.tetris.db.DataBase
+import com.evolution.tetris.db.PlayerDao
 import com.evolution.tetris.service
-import com.typesafe.config.ConfigFactory
+import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.util.Random
 
-import org.slf4j.LoggerFactory
-
-final case class ServiceFunctions(playerName: String) {
+final case class ServiceFunctions(playerName: String, playerDao: PlayerDao) {
   val presetsObject = new Presets()
   val tetrisSceneBooleanMatrixArrayBuffer: ArrayBuffer[ArrayBuffer[Boolean]] =
     ArrayBuffer.fill[Boolean](presetsObject.sceneHeight, presetsObject.sceneWidth)(false)
@@ -18,7 +16,7 @@ final case class ServiceFunctions(playerName: String) {
   val currentFigureContainingArrayBuffer: ArrayBuffer[Figure] = ArrayBuffer.fill[Figure](1)(generateRandomOrBonusFigure())
   val figureSupposedToBeRotatedArrayBuffer =
     ArrayBuffer[Figure](service.Figure(currentFigureContainingArrayBuffer(0).horizontalPosition, currentFigureContainingArrayBuffer(0).verticalPosition, currentFigureContainingArrayBuffer(0).shapeFormingBooleanMatrix.clone(), currentFigureContainingArrayBuffer(0).colorChoiceCode, presetsObject))
-  val db = new DataBase
+
   val scoreArrayOfScoreAndBonusScoreAndBonusFigureQuantity: Array[Int] =Array(0,0,0)
 
   def generateRandomOrBonusFigure(): Figure = {
@@ -98,8 +96,8 @@ final case class ServiceFunctions(playerName: String) {
 
   def resetGame(score: Int): Unit = {
     val my_logger = LoggerFactory.getLogger(getClass.getSimpleName)
-    db.PlayerDao.from(ConfigFactory.load()).unsafeRunSync().savePlayerScore(playerName, score).unsafeRunSync()
-    db.PlayerDao.from(ConfigFactory.load()).unsafeRunSync().collectAllPlayersToListAndSortByScore.unsafeRunSync().sortWith((x, y) => x.score > y.score).foreach(player =>  my_logger.info(player.toString)/*println(player)*/)
+    playerDao.savePlayerScore(playerName, score).unsafeRunSync()
+    //playerDao.collectAllPlayersToListAndSortByScore.unsafeRunSync().sortWith((x, y) => x.score > y.score).foreach(player =>  my_logger.info(player.toString)/*println(player)*/)
     fallenFiguresListBuffer.clear()
     tetrisSceneBooleanMatrixArrayBuffer.clear()
     tetrisSceneBooleanMatrixArrayBuffer.addAll(ArrayBuffer.fill[Boolean](presetsObject.sceneHeight, presetsObject.sceneWidth)(false))

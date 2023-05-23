@@ -1,5 +1,6 @@
 package com.evolution.tetris.desktopGame
 
+import com.evolution.tetris.db.PlayerDao
 import com.evolution.tetris.service.{Figure, Presets, ServiceFunctions}
 import javafx.scene.shape.Rectangle
 import scalafx.application.Platform
@@ -13,9 +14,9 @@ import scalafx.scene.text.{Font, Text}
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.util.Random
 
-final case class DesktopView(playerName: String) {
+final case class DesktopView(playerName: String, playerDao: PlayerDao) {
 
-  val serviceFunctions = new ServiceFunctions(playerName)
+  val serviceFunctions = new ServiceFunctions(playerName, playerDao)
   val presetsObject = new Presets()
   val fxSceneProtagonists = new Group()
 
@@ -30,7 +31,7 @@ final case class DesktopView(playerName: String) {
   val score: IntegerProperty = new IntegerProperty() {
     onChange { (_, _, newValue) =>
       Platform.runLater(() -> {
-        scoreText.setText(serviceFunctions.playerName+"'s "+s"SCORE: ${newValue.toString} \n " +
+        scoreText.setText(serviceFunctions.playerName + "'s " + s"SCORE: ${newValue.toString} \n " +
           s"Assigned bonus simple figures: ${bonusFiguresQuantity.toInt}\n" +
           s" BONUS SCORE: ${bonusScore.toInt}\n" +
           s" Can use C-key to change a figure: ${serviceFunctions.presetsObject.presetsArrayOfPauseAndFiguresChoiceAndBreakThruAbilityAndBonusType(1)}\n" +

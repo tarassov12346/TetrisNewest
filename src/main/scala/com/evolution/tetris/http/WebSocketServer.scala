@@ -4,8 +4,8 @@ import cats.effect.std.Queue
 import cats.effect.unsafe.implicits.global
 import cats.effect.{ExitCode, IO}
 import com.comcast.ip4s._
-import com.evolution.tetris.main.Main.db
-import com.typesafe.config.{Config, ConfigFactory}
+import com.evolution.tetris.db.PlayerDao
+import com.typesafe.config.Config
 import fs2.{Pipe, Stream}
 import org.http4s.dsl.io._
 import org.http4s.ember.server._
@@ -16,14 +16,15 @@ import org.http4s.{HttpRoutes, _}
 
 import scala.util.Random
 
-class WebSocketServer {
+class WebSocketServer (playerDao: PlayerDao){
 
   object WebSocketServer {
+
     val namesArray: Array[String] = Array("John", "Jack", "Peter", "Kyle", "Lorrain", "Jerry", "Nick", "Paul", "Wolf", "Reiner")
-    val http = new TetrisGame(namesArray(Random.nextInt(namesArray.length)))
+    val http = new TetrisGame(namesArray(Random.nextInt(namesArray.length)), playerDao)
 
 
-    private def dbRoute(wsb: WebSocketBuilder2[IO], playerDao: db.PlayerDao): HttpRoutes[IO] = HttpRoutes.of[IO] {
+    private def dbRoute[F[_]](wsb: WebSocketBuilder2[IO]): HttpRoutes[IO] = HttpRoutes.of[IO] {
       case GET -> Root =>
         val showAllFigures: Unit = http.tetris.view.showFallenFiguresAndCurrentFigure(http.tetris.service.fallenFiguresListBuffer, http.tetris.service.currentFigureContainingArrayBuffer)
         val dbPipe: Pipe[IO, WebSocketFrame, WebSocketFrame] = _.collect { case WebSocketFrame.Text(message, _) =>
@@ -32,7 +33,7 @@ class WebSocketServer {
           if (message.trim.nonEmpty) {
             message.trim.charAt(message.trim.length - 1).toString match {
 
-              case "@" => WebSocketFrame.Text("Current player name is " + http.tetris.playerName + " and his current score is " + http.tetris.view.score.value.toString())
+              case "@" => WebSocketFrame.Text("Current player name is " + http.tetris.playerName + " and his current score is " + http.tetris.view.score.value.toString)
 
               case "4" =>
                 if (http.tetris.service.canMoveTheFigureToLeft) {
@@ -75,7 +76,7 @@ class WebSocketServer {
                 else WebSocketFrame.Text("No Figure change is allowed for now!")
 
               case _ =>
-                val f = playerDao.from(ConfigFactory.load()).unsafeRunSync().find(message).unsafeRunSync().sortWith((x, y) => x.score > y.score).headOption
+                val f = playerDao.find(message).unsafeRunSync().sortWith((x, y) => x.score > y.score).headOption
                 f match {
                   case Some(value) => WebSocketFrame.Text(value.name + "'s BEST score is " + value.score)
                   case None => WebSocketFrame.Text("None!")
@@ -94,11 +95,11 @@ class WebSocketServer {
         } yield response
     }
 
-    private def httpApp(wsb: WebSocketBuilder2[IO], playerDao: db.PlayerDao): HttpApp[IO] = {
-      dbRoute(wsb, playerDao)
+    private def httpApp[F[_]](wsb: WebSocketBuilder2[IO]): HttpApp[IO] = {
+      dbRoute(wsb)
     }.orNotFound
 
-    def run(config: Config, playerDao: db.PlayerDao): IO[ExitCode] = {
+    def run(config: Config): IO[ExitCode] = {
       val hostString = config.getString("myServer.host.value")
       val portString = config.getString("myServer.port.value")
       for {
@@ -106,7 +107,7 @@ class WebSocketServer {
           .default[IO]
           .withHost(Host.fromString(hostString).get)
           .withPort(Port.fromString(portString).get)
-          .withHttpWebSocketApp(httpApp(_, playerDao))
+          .withHttpWebSocketApp(httpApp(_))
           .build.useForever.both(http.start())
       } yield ExitCode.Success
     }

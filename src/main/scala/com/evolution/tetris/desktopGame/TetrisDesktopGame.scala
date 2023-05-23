@@ -1,5 +1,6 @@
 package com.evolution.tetris.desktopGame
 
+import com.evolution.tetris.db.PlayerDao
 import com.evolution.tetris.service.ServiceFunctions
 import scalafx.application.JFXApp3
 import scalafx.concurrent.{ScheduledService, Task}
@@ -8,9 +9,9 @@ import scalafx.scene.input.KeyCode
 import scalafx.scene.paint.Color
 import scalafx.scene.{Group, Scene}
 
-final case class TetrisDesktopGame(playerName: String) extends JFXApp3 {
+final case class TetrisDesktopGame(playerName: String,playerDao: PlayerDao) extends JFXApp3 {
 
-  val view = new DesktopView(playerName)
+  val view = new DesktopView(playerName,playerDao)
   val service: ServiceFunctions = view.serviceFunctions
 
   override def start(): Unit = {
